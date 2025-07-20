@@ -84,8 +84,6 @@ This extension was developed by Mital Talhan.
 
 If this extension has been helpful to you, consider supporting its continued development and maintenance. Any contribution is greatly appreciated!
 
-**Donate via UPI:** `da123par@oksbi`
-
 ## Screenshots
 
 Here are some screenshots demonstrating the extension's functionality:
