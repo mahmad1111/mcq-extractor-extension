@@ -41,29 +41,37 @@
     let isDragging = false;
     let dragOffsetX, dragOffsetY;
 
+    // This mousedown listener initiates dragging the existing selection box
     selectionBox.addEventListener('mousedown', (e) => {
-      if (e.button === 0) { // Left click
+        if (e.button !== 0 || isSelecting) return; // Only left-click, and not when creating a new selection
+
         isDragging = true;
+        // Calculate offset from the element's top-left corner, accounting for page scroll
         dragOffsetX = e.clientX - selectionBox.getBoundingClientRect().left;
         dragOffsetY = e.clientY - selectionBox.getBoundingClientRect().top;
+
         selectionBox.style.cursor = 'grabbing';
-        e.stopPropagation(); // Prevent document's mousedown from interfering
-      }
+        e.stopPropagation(); // Prevent the page's mousedown listener from firing
+
+        // Attach listeners to the window to capture events anywhere on the page
+        window.addEventListener('mousemove', handleDragMove);
+        window.addEventListener('mouseup', handleDragEnd, { once: true });
     });
 
-    document.addEventListener('mousemove', (e) => {
-      if (isDragging) {
-        selectionBox.style.left = (e.clientX - dragOffsetX) + 'px';
-        selectionBox.style.top = (e.clientY - dragOffsetY) + 'px';
-      }
-    });
+    function handleDragMove(e) {
+        if (!isDragging) return;
+        // Calculate new position based on initial offset and current mouse position
+        const newLeft = e.clientX - dragOffsetX + window.scrollX;
+        const newTop = e.clientY - dragOffsetY + window.scrollY;
+        selectionBox.style.left = newLeft + 'px';
+        selectionBox.style.top = newTop + 'px';
+    }
 
-    document.addEventListener('mouseup', () => {
-      if (isDragging) {
+    function handleDragEnd() {
         isDragging = false;
         selectionBox.style.cursor = 'grab';
-      }
-    });
+        window.removeEventListener('mousemove', handleDragMove); // Clean up the listener
+    }
   }
 
   // Function to create and append the answer widget
@@ -163,24 +171,39 @@
     }
   }
 
-  // Handle mouse events for selection
+  // This mousedown listener initiates drawing a new selection box
   document.addEventListener('mousedown', (e) => {
-    if (!isSelecting || e.button !== 0) return; // Only left click
-    startX = e.clientX + window.scrollX; // Account for horizontal scroll
-    startY = e.clientY + window.scrollY; // Account for vertical scroll
+    // Only run if in selection mode, with a left-click, and not on the box itself
+    if (!isSelecting || e.button !== 0 || e.target.id === 'mcq-extractor-selection-box') {
+        return;
+    }
+
+    startX = e.clientX + window.scrollX;
+    startY = e.clientY + window.scrollY;
+
     selectionBox.style.left = startX + 'px';
     selectionBox.style.top = startY + 'px';
     selectionBox.style.width = '0px';
     selectionBox.style.height = '0px';
 
-    // Attach temporary mouseup listener for selection completion
-    document.addEventListener('mouseup', processSelection, { once: true });
+    // Attach listeners to the window for robust drag-selection
+    window.addEventListener('mousemove', handleSelectionResize);
+    window.addEventListener('mouseup', handleSelectionEnd, { once: true });
   });
 
-  document.addEventListener('mousemove', (e) => {
-    if (!isSelecting || e.buttons === 0) return; // Only if mouse button is pressed
-    const currentX = e.clientX + window.scrollX; // Account for horizontal scroll
-    const currentY = e.clientY + window.scrollY; // Account for vertical scroll
+  function handleSelectionResize(e) {
+    // This check is important because the listener is on the window.
+    // It ensures we only resize when the mouse button is actually pressed.
+    if (!isSelecting || e.buttons === 0) {
+        // As a fallback, if mouseup is missed (e.g., leaving the window), clean up.
+        window.removeEventListener('mousemove', handleSelectionResize);
+        window.removeEventListener('mouseup', handleSelectionEnd); // Ensure both are cleaned up
+        processSelection(); // Process what we have
+        return;
+    }
+
+    const currentX = e.clientX + window.scrollX;
+    const currentY = e.clientY + window.scrollY;
 
     const width = Math.abs(currentX - startX);
     const height = Math.abs(currentY - startY);
@@ -191,7 +214,12 @@
     selectionBox.style.top = top + 'px';
     selectionBox.style.width = width + 'px';
     selectionBox.style.height = height + 'px';
-  });
+  }
+
+  function handleSelectionEnd() {
+    window.removeEventListener('mousemove', handleSelectionResize); // Clean up
+    processSelection(); // Finalize the selection
+  }
 
   // Function to capture content (text or image) within the selection box
   async function captureContentInBox(rect) {
