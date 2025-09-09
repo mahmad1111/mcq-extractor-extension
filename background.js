@@ -3,7 +3,7 @@ console.log("MCQ Extractor Service Worker starting..."); // Added for debugging
 
 // Store the Google API key here. Replace "YOUR_GEMINI_API_KEY" with your actual key.
 // You can obtain one from Google AI Studio: https://aistudio.google.com/
-const GOOGLE_API_KEY = "YOUR_GEMINI_API_KEY";
+const GOOGLE_API_KEY = "AIzaSyB0ZLgAHV6Hd0pR8ODkJnEsODGk5Zx5Kkg";
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log("MCQ Extractor installed. Please update GOOGLE_API_KEY in background.js with your key.");
