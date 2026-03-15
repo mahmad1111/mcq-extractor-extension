@@ -163,6 +163,66 @@
             <p id="puzzle-feedback" style="color: #ffb74d; height: 20px; font-weight: bold;"></p>
         </div>
 
+        <!-- Epilogue Screen Overlay (Real Tesca 40501) -->
+        <div id="epilogue-screen" class="overlay hidden">
+            <!-- Wisdom NPC -->
+            <div id="wisdom-npc" style="position: absolute; top: 20px; right: 40px; text-align: center; z-index: 20;">
+                <div style="font-size: 60px; text-shadow: 0 0 20px #66fcf1; animation: float 3s ease-in-out infinite;">🦉</div>
+                <div style="color: #66fcf1; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 5px;">Spirit of the Summit</div>
+            </div>
+
+            <!-- Dialogue Box -->
+            <div id="dialogue-box" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 80%; background: #2c3e50; border: 4px solid #66fcf1; border-radius: 10px; padding: 20px; z-index: 30; cursor: pointer; display: flex; align-items: center; justify-content: space-between;" onclick="nextDialogue()">
+                <p id="dialogue-text" style="text-align: left; margin: 0; font-size: 1.1rem; color: #fff;">(Dialogue loads here...)</p>
+                <div style="color: #66fcf1; font-size: 20px; animation: blink 1s infinite;">▶</div>
+            </div>
+
+            <!-- The Real Tesca 40501 Board Representation -->
+            <div id="tesca-real-board" style="width: 700px; height: 350px; background: #2e7d32; border: 10px solid #bdbdbd; border-radius: 10px; box-shadow: inset 0 0 30px #1b5e20, 0 10px 30px rgba(0,0,0,0.8); position: relative; display: flex; padding: 20px; justify-content: space-around; flex-wrap: wrap;">
+                <!-- Header -->
+                <div style="position: absolute; top: 10px; left: 20px; color: #fff; font-weight: bold; font-family: sans-serif; letter-spacing: 2px;">TESCA 40501 <span style="font-size: 0.6rem; color: #ccc;">AM / FM MODULATION AND DEMODULATION TRAINER</span></div>
+
+                <!-- Circuit Blocks -->
+                <div class="circuit-block" id="block-fm-mod" style="width: 45%; height: 120px; border: 2px solid rgba(255,255,255,0.3); border-radius: 5px; margin-top: 30px; position: relative; padding: 10px;">
+                    <div style="color: #fff; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px;">FM MODULATOR</div>
+                    <div style="display: flex; justify-content: space-around; margin-top: 20px;">
+                        <div class="knob"></div>
+                        <div class="bnc"></div>
+                    </div>
+                </div>
+
+                <div class="circuit-block" id="block-am-mod" style="width: 45%; height: 120px; border: 2px solid rgba(255,255,255,0.3); border-radius: 5px; margin-top: 30px; position: relative; padding: 10px;">
+                    <div style="color: #fff; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px;">AM MODULATOR</div>
+                    <div style="display: flex; justify-content: space-around; margin-top: 20px;">
+                        <div class="knob"></div>
+                        <div class="knob"></div>
+                        <div class="bnc"></div>
+                    </div>
+                </div>
+
+                <div class="circuit-block" id="block-audio-osc" style="width: 30%; height: 120px; border: 2px solid rgba(255,255,255,0.3); border-radius: 5px; position: relative; padding: 10px;">
+                    <div style="color: #fff; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px;">AUDIO OSCILLATOR (Message)</div>
+                    <div style="display: flex; justify-content: space-around; margin-top: 20px;">
+                        <div class="knob"></div>
+                        <div class="bnc"></div>
+                    </div>
+                </div>
+
+                <div class="circuit-block" id="block-rf-osc" style="width: 30%; height: 120px; border: 2px solid rgba(255,255,255,0.3); border-radius: 5px; position: relative; padding: 10px;">
+                    <div style="color: #fff; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px;">RF OSCILLATOR (Carrier)</div>
+                    <div style="display: flex; justify-content: space-around; margin-top: 20px;">
+                        <div class="knob"></div>
+                        <div class="bnc"></div>
+                    </div>
+                </div>
+
+                <div class="circuit-block" id="block-power" style="width: 25%; height: 120px; border: 2px solid rgba(255,255,255,0.3); border-radius: 5px; position: relative; padding: 10px; display: flex; align-items: center; justify-content: center;">
+                    <div style="position: absolute; top: 5px; left: 10px; color: #fff; font-size: 0.8rem;">POWER</div>
+                    <div style="width: 30px; height: 40px; background: #d32f2f; border: 2px solid #b71c1c; border-radius: 3px; box-shadow: 0 4px 0 #8e0000;"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- Win Screen Overlay -->
         <div id="win-screen" class="overlay hidden">
             <h1 style="color: #66bb6a;">SUMMIT REACHED!</h1>
@@ -572,12 +632,59 @@
             if (success) {
                 currentStage++;
                 if (currentStage > 3) {
-                    gameState = 'WIN';
-                    document.getElementById('win-screen').classList.remove('hidden');
+                    startEpilogue();
                 } else {
                     loadStage(currentStage);
                 }
             }
+        }
+
+        // Dialogue State
+        let dialogueIndex = -1;
+        const dialogueSequence = [
+            { text: "Hoo! You have climbed well. But to truly master the mountain, you must understand the machine that guided you: The Tesca 40501.", block: null },
+            { text: "This is a real Modulation and Demodulation Trainer kit. It contains many separate circuit blocks used to generate and manipulate signals.", block: null },
+            { text: "Let us begin with Frequency Modulation (FM).", block: 'block-fm-mod' },
+            { text: "In FM, the amplitude of the carrier wave stays constant. However, its FREQUENCY (how squished or stretched the waves are) changes depending on the message signal.", block: 'block-fm-mod' },
+            { text: "The Tesca board uses an Audio Oscillator to generate the low-frequency message signal...", block: 'block-audio-osc' },
+            { text: "...and an RF (Radio Frequency) Oscillator to generate the high-frequency carrier wave.", block: 'block-rf-osc' },
+            { text: "These two signals are fed into the FM Modulator block, which produces the final Frequency Modulated wave you matched earlier.", block: 'block-fm-mod' },
+            { text: "Now, let us look at Amplitude Modulation (AM).", block: 'block-am-mod' },
+            { text: "In AM, the frequency of the carrier wave stays constant. Instead, its AMPLITUDE (how tall the waves are) changes to match the shape of the message signal.", block: 'block-am-mod' },
+            { text: "Just like FM, the AM Modulator block takes the Audio (message) and RF (carrier) signals and combines them to create an AM wave envelope.", block: 'block-am-mod' },
+            { text: "These simple principles are how radios transmit voices and data across vast distances! You are now a master of waves.", block: null }
+        ];
+
+        function startEpilogue() {
+            gameState = 'EPILOGUE';
+            document.getElementById('epilogue-screen').classList.remove('hidden');
+            dialogueIndex = -1;
+            nextDialogue(); // Start dialogue sequence
+        }
+
+        function nextDialogue() {
+            dialogueIndex++;
+            if (dialogueIndex >= dialogueSequence.length) {
+                finishEpilogue();
+                return;
+            }
+
+            const current = dialogueSequence[dialogueIndex];
+
+            // Set text
+            document.getElementById('dialogue-text').innerText = current.text;
+
+            // Handle highlighting
+            document.querySelectorAll('.circuit-block').forEach(el => el.classList.remove('highlighted-block'));
+            if (current.block) {
+                document.getElementById(current.block).classList.add('highlighted-block');
+            }
+        }
+
+        function finishEpilogue() {
+            document.getElementById('epilogue-screen').classList.add('hidden');
+            gameState = 'WIN';
+            document.getElementById('win-screen').classList.remove('hidden');
         }
 
         // Simple Audio Context for SFX
@@ -651,8 +758,8 @@
                 drawPuzzleWaveform();
                 return;
             }
-            if (gameState === 'WIN') {
-                return; // Win screen overlay handles drawing
+            if (gameState === 'WIN' || gameState === 'EPILOGUE') {
+                return; // Overlays handle drawing for these states
             }
 
             // Clear screen
