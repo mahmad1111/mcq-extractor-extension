@@ -345,7 +345,7 @@
                 });
 
             } else if (stageNum === 2) {
-                // Stage 2: Intro to FM
+                // Stage 2: Intro to FM (Easier Version)
                 levelWidth = 2400;
                 levelHeight = 800; // Taller level too
 
@@ -353,82 +353,82 @@
 
                 player.spawnX = 50; player.spawnY = levelHeight - 100;
 
-                // Ascending path
-                platforms.push({ x: 150, y: levelHeight - 120, width: 80, height: 20 });
-                platforms.push({ x: 300, y: levelHeight - 200, width: 80, height: 20 });
-                platforms.push({ x: 450, y: levelHeight - 280, width: 80, height: 20 });
+                // Ascending path (wider platforms, smaller gaps)
+                platforms.push({ x: 150, y: levelHeight - 100, width: 120, height: 20 });
+                platforms.push({ x: 300, y: levelHeight - 180, width: 120, height: 20 });
+                platforms.push({ x: 450, y: levelHeight - 260, width: 120, height: 20 });
 
-                // Long gap
-                platforms.push({ x: 700, y: levelHeight - 350, width: 200, height: 20 });
-                hazards.push({ x: 150, y: levelHeight - 40, width: 1000, height: 20 });
+                // Long gap (added safety net floor)
+                platforms.push({ x: 650, y: levelHeight - 320, width: 300, height: 20 });
+                // hazards.push({ x: 150, y: levelHeight - 40, width: 1000, height: 20 }); // Removed spikes under first part
 
-                // Stepping stones
-                platforms.push({ x: 1000, y: levelHeight - 350, width: 50, height: 20 });
-                platforms.push({ x: 1150, y: levelHeight - 420, width: 50, height: 20 });
-                platforms.push({ x: 1300, y: levelHeight - 500, width: 50, height: 20 });
-                platforms.push({ x: 1450, y: levelHeight - 400, width: 50, height: 20 });
-                platforms.push({ x: 1600, y: levelHeight - 300, width: 50, height: 20 });
+                // Stepping stones (much wider)
+                platforms.push({ x: 1000, y: levelHeight - 320, width: 100, height: 20 });
+                platforms.push({ x: 1150, y: levelHeight - 380, width: 100, height: 20 });
+                platforms.push({ x: 1300, y: levelHeight - 440, width: 100, height: 20 });
+                platforms.push({ x: 1450, y: levelHeight - 360, width: 100, height: 20 });
+                platforms.push({ x: 1600, y: levelHeight - 280, width: 100, height: 20 });
 
                 // Final stretch
-                platforms.push({ x: 1800, y: levelHeight - 400, width: 300, height: 20 });
+                platforms.push({ x: 1800, y: levelHeight - 350, width: 300, height: 20 });
 
                 // Strawberries
-                strawberries.push({ x: 330, y: levelHeight - 240, width: 16, height: 16, collected: false, originY: levelHeight - 240, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 1315, y: levelHeight - 540, width: 16, height: 16, collected: false, originY: levelHeight - 540, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 1850, y: levelHeight - 450, width: 16, height: 16, collected: false, originY: levelHeight - 450, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 330, y: levelHeight - 220, width: 16, height: 16, collected: false, originY: levelHeight - 220, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 1315, y: levelHeight - 480, width: 16, height: 16, collected: false, originY: levelHeight - 480, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 1850, y: levelHeight - 400, width: 16, height: 16, collected: false, originY: levelHeight - 400, floatOffset: Math.random() * Math.PI });
 
-                hazards.push({ x: 1200, y: levelHeight - 40, width: 1100, height: 20 });
+                // Reduced hazards
+                hazards.push({ x: 1200, y: levelHeight - 40, width: 500, height: 20 });
 
                 // Tesca Machine for FM
                 interactables.push({
-                    x: 1950, y: levelHeight - 460, width: 60, height: 60,
+                    x: 1950, y: levelHeight - 410, width: 60, height: 60,
                     type: 'tesca', puzzleType: 'FM', active: true
                 });
 
             } else if (stageNum === 3) {
-                // Stage 3: AM + FM Combined
+                // Stage 3: AM + FM Combined (Easier Version)
                 levelWidth = 3200;
                 levelHeight = 1000;
 
-                platforms.push({ x: 0, y: levelHeight - 20, width: 200, height: 20, type: 'floor' }); // Small floor
-                platforms.push({ x: 3000, y: levelHeight - 20, width: 200, height: 20, type: 'floor' }); // End floor
+                platforms.push({ x: 0, y: levelHeight - 20, width: 3200, height: 20, type: 'floor' }); // Full floor instead of huge spike pit
 
                 player.spawnX = 50; player.spawnY = levelHeight - 100;
 
-                // Massive spike pit for most of the level
-                hazards.push({ x: 200, y: levelHeight - 40, width: 2800, height: 20 });
+                // Spikes are now isolated traps instead of the whole floor
+                hazards.push({ x: 400, y: levelHeight - 40, width: 200, height: 20 });
+                hazards.push({ x: 1000, y: levelHeight - 40, width: 400, height: 20 });
 
-                // Very complex platforming
-                platforms.push({ x: 250, y: levelHeight - 100, width: 50, height: 20 });
-                platforms.push({ x: 400, y: levelHeight - 200, width: 50, height: 20 });
-                platforms.push({ x: 550, y: levelHeight - 300, width: 50, height: 20 });
-                platforms.push({ x: 300, y: levelHeight - 400, width: 80, height: 20 }); // Backwards jump
-                platforms.push({ x: 500, y: levelHeight - 500, width: 50, height: 20 });
-                platforms.push({ x: 700, y: levelHeight - 600, width: 100, height: 20 });
+                // Simplified platforming (stairs pattern)
+                platforms.push({ x: 250, y: levelHeight - 100, width: 100, height: 20 });
+                platforms.push({ x: 400, y: levelHeight - 200, width: 100, height: 20 });
+                platforms.push({ x: 550, y: levelHeight - 300, width: 100, height: 20 });
+                // removed backwards jump
+                platforms.push({ x: 700, y: levelHeight - 400, width: 150, height: 20 });
 
-                // Drop down
-                platforms.push({ x: 1000, y: levelHeight - 300, width: 100, height: 20 });
+                // Drop down / flat path
+                platforms.push({ x: 950, y: levelHeight - 300, width: 150, height: 20 });
 
-                // Spiky tunnel
-                platforms.push({ x: 1300, y: levelHeight - 300, width: 400, height: 20 });
-                platforms.push({ x: 1300, y: levelHeight - 450, width: 400, height: 20 });
-                hazards.push({ x: 1350, y: levelHeight - 430, width: 300, height: 20 }); // Spikes on ceiling
+                // Spiky tunnel made easier (no spikes, wider tunnel)
+                platforms.push({ x: 1200, y: levelHeight - 250, width: 400, height: 20 });
+                platforms.push({ x: 1200, y: levelHeight - 450, width: 400, height: 20 });
+                // hazards.push({ x: 1350, y: levelHeight - 430, width: 300, height: 20 }); // Removed spikes on ceiling
 
-                // Precision jumps
-                platforms.push({ x: 1800, y: levelHeight - 300, width: 40, height: 20 });
-                platforms.push({ x: 1950, y: levelHeight - 400, width: 40, height: 20 });
-                platforms.push({ x: 2100, y: levelHeight - 500, width: 40, height: 20 });
-                platforms.push({ x: 2300, y: levelHeight - 600, width: 200, height: 20 });
+                // Precision jumps made into simple wide platforms
+                platforms.push({ x: 1700, y: levelHeight - 350, width: 80, height: 20 });
+                platforms.push({ x: 1850, y: levelHeight - 450, width: 80, height: 20 });
+                platforms.push({ x: 2000, y: levelHeight - 550, width: 80, height: 20 });
+                platforms.push({ x: 2200, y: levelHeight - 650, width: 250, height: 20 });
 
                 // Final ascent
-                platforms.push({ x: 2600, y: levelHeight - 700, width: 50, height: 20 });
-                platforms.push({ x: 2800, y: levelHeight - 800, width: 300, height: 20 });
+                platforms.push({ x: 2500, y: levelHeight - 700, width: 100, height: 20 });
+                platforms.push({ x: 2700, y: levelHeight - 800, width: 400, height: 20 });
 
                 // Strawberries
-                strawberries.push({ x: 565, y: levelHeight - 340, width: 16, height: 16, collected: false, originY: levelHeight - 340, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 1500, y: levelHeight - 400, width: 16, height: 16, collected: false, originY: levelHeight - 400, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 2110, y: levelHeight - 540, width: 16, height: 16, collected: false, originY: levelHeight - 540, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 2615, y: levelHeight - 740, width: 16, height: 16, collected: false, originY: levelHeight - 740, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 580, y: levelHeight - 340, width: 16, height: 16, collected: false, originY: levelHeight - 340, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 1400, y: levelHeight - 300, width: 16, height: 16, collected: false, originY: levelHeight - 300, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 2020, y: levelHeight - 590, width: 16, height: 16, collected: false, originY: levelHeight - 590, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 2530, y: levelHeight - 740, width: 16, height: 16, collected: false, originY: levelHeight - 740, floatOffset: Math.random() * Math.PI });
 
                 // Tesca Machine for Combined
                 interactables.push({
@@ -896,53 +896,21 @@
             drawWave(puzzleState.current, '#66bb6a', false);
         }
 
+        const bgImage = new Image();
+        bgImage.src = 'celeste-switch-review-5.jpeg';
+        let bgLoaded = false;
+        bgImage.onload = () => { bgLoaded = true; };
+
         function drawMountains(ctx) {
+            if (!bgLoaded) return;
             // Parallax effect based on camera X
-            let parallaxX = (camera.x * 0.2) % 800;
+            // Assuming image width might be different, let's draw it repeating if needed
+            let parallaxX = (camera.x * 0.2) % canvas.width;
 
-            // Distant Mountains (Darkest)
-            ctx.fillStyle = '#0f1626';
-            ctx.beginPath();
-            ctx.moveTo(0, 600);
-            for(let i=0; i<3; i++) {
-                let offset = i * 400 - parallaxX;
-                ctx.lineTo(offset, 600);
-                ctx.lineTo(offset + 100, 300);
-                ctx.lineTo(offset + 250, 450);
-                ctx.lineTo(offset + 400, 200);
-            }
-            ctx.lineTo(800, 600);
-            ctx.fill();
-
-            // Mid Mountains (Lighter)
-            parallaxX = (camera.x * 0.4) % 800;
-            ctx.fillStyle = '#1c283d';
-            ctx.beginPath();
-            ctx.moveTo(0, 600);
-            for(let i=0; i<3; i++) {
-                let offset = i * 400 - parallaxX;
-                ctx.lineTo(offset, 600);
-                ctx.lineTo(offset + 150, 350);
-                ctx.lineTo(offset + 300, 500);
-                ctx.lineTo(offset + 400, 250);
-            }
-            ctx.lineTo(800, 600);
-            ctx.fill();
-
-            // Snowcaps on Mid Mountains
-            ctx.fillStyle = '#45a29e';
-            ctx.beginPath();
-            for(let i=0; i<3; i++) {
-                let offset = i * 400 - parallaxX;
-                ctx.moveTo(offset + 150, 350);
-                ctx.lineTo(offset + 120, 400);
-                ctx.lineTo(offset + 180, 400);
-
-                ctx.moveTo(offset + 400, 250);
-                ctx.lineTo(offset + 370, 300);
-                ctx.lineTo(offset + 430, 300);
-            }
-            ctx.fill();
+            // Draw original
+            ctx.drawImage(bgImage, -parallaxX, 0, canvas.width, canvas.height);
+            // Draw wrapping part
+            ctx.drawImage(bgImage, canvas.width - parallaxX, 0, canvas.width, canvas.height);
         }
 
         function drawTopAudioVisualizer(ctx) {
@@ -974,11 +942,11 @@
                 return; // Overlays handle drawing for these states
             }
 
-            // Clear screen
+            // Clear screen (only needed if bg takes time to load, or to clear edges)
             ctx.fillStyle = GAME_BG;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Mountain Background
+            // Draw Mountain Background Image
             drawMountains(ctx);
 
             // Draw Snowflakes (Background)
