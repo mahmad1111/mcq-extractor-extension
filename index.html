@@ -310,7 +310,7 @@
             strawberries = [];
 
             if (stageNum === 1) {
-                // Stage 1: Intro to AM - Wider level
+                // Stage 1: Intro to AM - Very Easy
                 levelWidth = 1600;
                 levelHeight = 600;
 
@@ -318,34 +318,25 @@
 
                 player.spawnX = 50; player.spawnY = 500;
 
-                // Section 1: Intro jumps
-                platforms.push({ x: 200, y: 480, width: 100, height: 20 });
-                platforms.push({ x: 350, y: 400, width: 100, height: 20 });
-                platforms.push({ x: 500, y: 320, width: 150, height: 20 });
+                // Section 1: Simple stairs
+                platforms.push({ x: 200, y: 480, width: 200, height: 20 });
+                platforms.push({ x: 450, y: 400, width: 200, height: 20 });
+                platforms.push({ x: 700, y: 320, width: 800, height: 20 });
 
-                // Spikes below
-                hazards.push({ x: 250, y: levelHeight - 40, width: 300, height: 20 });
+                // Strawberries (easy to grab)
+                strawberries.push({ x: 550, y: 360, width: 16, height: 16, collected: false, originY: 360, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 1030, y: 280, width: 16, height: 16, collected: false, originY: 280, floatOffset: Math.random() * Math.PI });
 
-                // Section 2: Wider gaps
-                platforms.push({ x: 800, y: 400, width: 80, height: 20 });
-                platforms.push({ x: 1000, y: 300, width: 80, height: 20 });
-                platforms.push({ x: 1200, y: 250, width: 250, height: 20 });
-
-                // Strawberries
-                strawberries.push({ x: 550, y: 280, width: 16, height: 16, collected: false, originY: 280, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 1030, y: 260, width: 16, height: 16, collected: false, originY: 260, floatOffset: Math.random() * Math.PI });
-
-                // Spikes
-                hazards.push({ x: 600, y: levelHeight - 40, width: 900, height: 20 });
+                // Spikes: NONE. Just floor.
 
                 // Tesca Machine for AM
                 interactables.push({
-                    x: 1350, y: 190, width: 60, height: 60,
+                    x: 1350, y: 260, width: 60, height: 60,
                     type: 'tesca', puzzleType: 'AM', active: true
                 });
 
             } else if (stageNum === 2) {
-                // Stage 2: Intro to FM (Easier Version)
+                // Stage 2: Intro to FM (Very Easy)
                 levelWidth = 2400;
                 levelHeight = 800; // Taller level too
 
@@ -353,86 +344,67 @@
 
                 player.spawnX = 50; player.spawnY = levelHeight - 100;
 
-                // Ascending path (wider platforms, smaller gaps)
-                platforms.push({ x: 150, y: levelHeight - 100, width: 120, height: 20 });
-                platforms.push({ x: 300, y: levelHeight - 180, width: 120, height: 20 });
-                platforms.push({ x: 450, y: levelHeight - 260, width: 120, height: 20 });
+                // Ascending path (massive platforms, tiny gaps)
+                platforms.push({ x: 150, y: levelHeight - 100, width: 250, height: 20 });
+                platforms.push({ x: 450, y: levelHeight - 180, width: 250, height: 20 });
+                platforms.push({ x: 750, y: levelHeight - 260, width: 250, height: 20 });
 
-                // Long gap (added safety net floor)
-                platforms.push({ x: 650, y: levelHeight - 320, width: 300, height: 20 });
-                // hazards.push({ x: 150, y: levelHeight - 40, width: 1000, height: 20 }); // Removed spikes under first part
+                // Long safe bridge
+                platforms.push({ x: 1050, y: levelHeight - 320, width: 500, height: 20 });
 
-                // Stepping stones (much wider)
-                platforms.push({ x: 1000, y: levelHeight - 320, width: 100, height: 20 });
-                platforms.push({ x: 1150, y: levelHeight - 380, width: 100, height: 20 });
-                platforms.push({ x: 1300, y: levelHeight - 440, width: 100, height: 20 });
-                platforms.push({ x: 1450, y: levelHeight - 360, width: 100, height: 20 });
-                platforms.push({ x: 1600, y: levelHeight - 280, width: 100, height: 20 });
+                // Easy stepping stones (much wider)
+                platforms.push({ x: 1600, y: levelHeight - 380, width: 150, height: 20 });
+                platforms.push({ x: 1800, y: levelHeight - 440, width: 150, height: 20 });
 
                 // Final stretch
-                platforms.push({ x: 1800, y: levelHeight - 350, width: 300, height: 20 });
+                platforms.push({ x: 2000, y: levelHeight - 440, width: 300, height: 20 });
 
-                // Strawberries
-                strawberries.push({ x: 330, y: levelHeight - 220, width: 16, height: 16, collected: false, originY: levelHeight - 220, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 1315, y: levelHeight - 480, width: 16, height: 16, collected: false, originY: levelHeight - 480, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 1850, y: levelHeight - 400, width: 16, height: 16, collected: false, originY: levelHeight - 400, floatOffset: Math.random() * Math.PI });
+                // Strawberries (moved to be safe)
+                strawberries.push({ x: 550, y: levelHeight - 220, width: 16, height: 16, collected: false, originY: levelHeight - 220, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 1300, y: levelHeight - 360, width: 16, height: 16, collected: false, originY: levelHeight - 360, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 1850, y: levelHeight - 480, width: 16, height: 16, collected: false, originY: levelHeight - 480, floatOffset: Math.random() * Math.PI });
 
-                // Reduced hazards
-                hazards.push({ x: 1200, y: levelHeight - 40, width: 500, height: 20 });
+                // Hazards: NONE. Completely safe ground.
 
                 // Tesca Machine for FM
                 interactables.push({
-                    x: 1950, y: levelHeight - 410, width: 60, height: 60,
+                    x: 2150, y: levelHeight - 500, width: 60, height: 60,
                     type: 'tesca', puzzleType: 'FM', active: true
                 });
 
             } else if (stageNum === 3) {
-                // Stage 3: AM + FM Combined (Easier Version)
+                // Stage 3: AM + FM Combined (Very Easy Version)
                 levelWidth = 3200;
                 levelHeight = 1000;
 
-                platforms.push({ x: 0, y: levelHeight - 20, width: 3200, height: 20, type: 'floor' }); // Full floor instead of huge spike pit
+                platforms.push({ x: 0, y: levelHeight - 20, width: 3200, height: 20, type: 'floor' }); // Full safe floor everywhere
 
                 player.spawnX = 50; player.spawnY = levelHeight - 100;
 
-                // Spikes are now isolated traps instead of the whole floor
-                hazards.push({ x: 400, y: levelHeight - 40, width: 200, height: 20 });
-                hazards.push({ x: 1000, y: levelHeight - 40, width: 400, height: 20 });
+                // Spikes: NONE.
 
-                // Simplified platforming (stairs pattern)
-                platforms.push({ x: 250, y: levelHeight - 100, width: 100, height: 20 });
-                platforms.push({ x: 400, y: levelHeight - 200, width: 100, height: 20 });
-                platforms.push({ x: 550, y: levelHeight - 300, width: 100, height: 20 });
-                // removed backwards jump
-                platforms.push({ x: 700, y: levelHeight - 400, width: 150, height: 20 });
+                // Simplified platforming (very gentle stairs pattern)
+                platforms.push({ x: 250, y: levelHeight - 100, width: 250, height: 20 });
+                platforms.push({ x: 550, y: levelHeight - 200, width: 250, height: 20 });
+                platforms.push({ x: 850, y: levelHeight - 300, width: 250, height: 20 });
+                platforms.push({ x: 1150, y: levelHeight - 400, width: 400, height: 20 });
 
-                // Drop down / flat path
-                platforms.push({ x: 950, y: levelHeight - 300, width: 150, height: 20 });
+                // Simple flat bridge crossing instead of spiky tunnels
+                platforms.push({ x: 1650, y: levelHeight - 400, width: 600, height: 20 });
 
-                // Spiky tunnel made easier (no spikes, wider tunnel)
-                platforms.push({ x: 1200, y: levelHeight - 250, width: 400, height: 20 });
-                platforms.push({ x: 1200, y: levelHeight - 450, width: 400, height: 20 });
-                // hazards.push({ x: 1350, y: levelHeight - 430, width: 300, height: 20 }); // Removed spikes on ceiling
+                // Gentle final ascent
+                platforms.push({ x: 2350, y: levelHeight - 500, width: 250, height: 20 });
+                platforms.push({ x: 2650, y: levelHeight - 600, width: 500, height: 20 });
 
-                // Precision jumps made into simple wide platforms
-                platforms.push({ x: 1700, y: levelHeight - 350, width: 80, height: 20 });
-                platforms.push({ x: 1850, y: levelHeight - 450, width: 80, height: 20 });
-                platforms.push({ x: 2000, y: levelHeight - 550, width: 80, height: 20 });
-                platforms.push({ x: 2200, y: levelHeight - 650, width: 250, height: 20 });
-
-                // Final ascent
-                platforms.push({ x: 2500, y: levelHeight - 700, width: 100, height: 20 });
-                platforms.push({ x: 2700, y: levelHeight - 800, width: 400, height: 20 });
-
-                // Strawberries
-                strawberries.push({ x: 580, y: levelHeight - 340, width: 16, height: 16, collected: false, originY: levelHeight - 340, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 1400, y: levelHeight - 300, width: 16, height: 16, collected: false, originY: levelHeight - 300, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 2020, y: levelHeight - 590, width: 16, height: 16, collected: false, originY: levelHeight - 590, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 2530, y: levelHeight - 740, width: 16, height: 16, collected: false, originY: levelHeight - 740, floatOffset: Math.random() * Math.PI });
+                // Strawberries (Placed in obvious easy spots)
+                strawberries.push({ x: 650, y: levelHeight - 240, width: 16, height: 16, collected: false, originY: levelHeight - 240, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 1350, y: levelHeight - 440, width: 16, height: 16, collected: false, originY: levelHeight - 440, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 1950, y: levelHeight - 440, width: 16, height: 16, collected: false, originY: levelHeight - 440, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 2450, y: levelHeight - 540, width: 16, height: 16, collected: false, originY: levelHeight - 540, floatOffset: Math.random() * Math.PI });
 
                 // Tesca Machine for Combined
                 interactables.push({
-                    x: 2950, y: levelHeight - 860, width: 60, height: 60,
+                    x: 2950, y: levelHeight - 660, width: 60, height: 60,
                     type: 'tesca', puzzleType: 'COMBINED', active: true
                 });
             }
