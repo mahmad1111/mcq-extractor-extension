@@ -107,6 +107,22 @@
             display: none !important;
         }
 
+        /* Highlight for Real Tesca Image Highlights */
+        .highlighted-area {
+            position: absolute;
+            border: 4px solid #66fcf1;
+            box-shadow: 0 0 20px #66fcf1, inset 0 0 20px #66fcf1;
+            background-color: rgba(102, 252, 241, 0.2);
+            border-radius: 5px;
+            animation: pulse-glow 1s infinite alternate;
+            display: none; /* hidden by default */
+        }
+
+        @keyframes pulse-glow {
+            from { opacity: 0.6; }
+            to { opacity: 1; }
+        }
+
         /* Audio Element */
         #bgm {
             display: none;
@@ -177,49 +193,18 @@
                 <div style="color: #66fcf1; font-size: 20px; animation: blink 1s infinite;">▶</div>
             </div>
 
-            <!-- The Real Tesca 40501 Board Representation -->
-            <div id="tesca-real-board" style="width: 700px; height: 350px; background: #2e7d32; border: 10px solid #bdbdbd; border-radius: 10px; box-shadow: inset 0 0 30px #1b5e20, 0 10px 30px rgba(0,0,0,0.8); position: relative; display: flex; padding: 20px; justify-content: space-around; flex-wrap: wrap;">
-                <!-- Header -->
-                <div style="position: absolute; top: 10px; left: 20px; color: #fff; font-weight: bold; font-family: sans-serif; letter-spacing: 2px;">TESCA 40501 <span style="font-size: 0.6rem; color: #ccc;">AM / FM MODULATION AND DEMODULATION TRAINER</span></div>
+            <!-- The Real Tesca 40501 Photo Background -->
+            <div id="tesca-real-board" style="width: 700px; height: 400px; background-image: url('tesca_board.png'); background-size: contain; background-repeat: no-repeat; background-position: center; border: 4px solid #bdbdbd; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative;">
 
-                <!-- Circuit Blocks -->
-                <div class="circuit-block" id="block-fm-mod" style="width: 45%; height: 120px; border: 2px solid rgba(255,255,255,0.3); border-radius: 5px; margin-top: 30px; position: relative; padding: 10px;">
-                    <div style="color: #fff; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px;">FM MODULATOR</div>
-                    <div style="display: flex; justify-content: space-around; margin-top: 20px;">
-                        <div class="knob"></div>
-                        <div class="bnc"></div>
-                    </div>
-                </div>
+                <!-- Highlight Overlay Areas (Mapped roughly to the provided image) -->
+                <!-- FM/AM generally shares the right side modulation transistor area, we'll highlight the specific inputs/outputs -->
 
-                <div class="circuit-block" id="block-am-mod" style="width: 45%; height: 120px; border: 2px solid rgba(255,255,255,0.3); border-radius: 5px; margin-top: 30px; position: relative; padding: 10px;">
-                    <div style="color: #fff; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px;">AM MODULATOR</div>
-                    <div style="display: flex; justify-content: space-around; margin-top: 20px;">
-                        <div class="knob"></div>
-                        <div class="knob"></div>
-                        <div class="bnc"></div>
-                    </div>
-                </div>
+                <div class="highlighted-area" id="area-audio-in" style="top: 38%; left: 32%; width: 10%; height: 12%;"></div> <!-- AUDIO IN -->
+                <div class="highlighted-area" id="area-carrier-in" style="top: 22%; left: 32%; width: 10%; height: 10%;"></div> <!-- CARRIER IN -->
+                <div class="highlighted-area" id="area-carrier-signal" style="top: 22%; left: 20%; width: 10%; height: 10%;"></div> <!-- CARRIER SIGNAL (Oscillator) -->
+                <div class="highlighted-area" id="area-modulator" style="top: 25%; left: 65%; width: 15%; height: 35%;"></div> <!-- Transistor area (Modulator) -->
+                <div class="highlighted-area" id="area-output" style="top: 15%; left: 81%; width: 12%; height: 15%;"></div> <!-- MODULATED OUTPUT -->
 
-                <div class="circuit-block" id="block-audio-osc" style="width: 30%; height: 120px; border: 2px solid rgba(255,255,255,0.3); border-radius: 5px; position: relative; padding: 10px;">
-                    <div style="color: #fff; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px;">AUDIO OSCILLATOR (Message)</div>
-                    <div style="display: flex; justify-content: space-around; margin-top: 20px;">
-                        <div class="knob"></div>
-                        <div class="bnc"></div>
-                    </div>
-                </div>
-
-                <div class="circuit-block" id="block-rf-osc" style="width: 30%; height: 120px; border: 2px solid rgba(255,255,255,0.3); border-radius: 5px; position: relative; padding: 10px;">
-                    <div style="color: #fff; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px;">RF OSCILLATOR (Carrier)</div>
-                    <div style="display: flex; justify-content: space-around; margin-top: 20px;">
-                        <div class="knob"></div>
-                        <div class="bnc"></div>
-                    </div>
-                </div>
-
-                <div class="circuit-block" id="block-power" style="width: 25%; height: 120px; border: 2px solid rgba(255,255,255,0.3); border-radius: 5px; position: relative; padding: 10px; display: flex; align-items: center; justify-content: center;">
-                    <div style="position: absolute; top: 5px; left: 10px; color: #fff; font-size: 0.8rem;">POWER</div>
-                    <div style="width: 30px; height: 40px; background: #d32f2f; border: 2px solid #b71c1c; border-radius: 3px; box-shadow: 0 4px 0 #8e0000;"></div>
-                </div>
             </div>
         </div>
 
@@ -279,13 +264,32 @@
             grounded: false,
             color: '#e53935',
             spawnX: 50,
-            spawnY: 500
+            spawnY: 500,
+            scaleX: 1.0,
+            scaleY: 1.0
+        };
+
+        // Camera Object
+        const camera = {
+            x: 0,
+            y: 0,
+            width: 800,
+            height: 600,
+            targetX: 0,
+            targetY: 0,
+            lerp: 0.1 // Smoothness of camera follow
         };
 
         // Level Design & Obstacles
         let platforms = [];
         let hazards = []; // Spikes
         let interactables = []; // Tesca 40501 machines
+        let strawberries = []; // Collectibles
+        let levelWidth = 800;
+        let levelHeight = 600;
+
+        // Progression
+        let totalStrawberriesCollected = 0;
 
         // Particle system for snow
         let snowflakes = [];
@@ -303,66 +307,139 @@
             platforms = [];
             hazards = [];
             interactables = [];
-
-            // Base floor is always there
-            platforms.push({ x: 0, y: canvas.height - 20, width: canvas.width, height: 20, type: 'floor' });
+            strawberries = [];
 
             if (stageNum === 1) {
-                // Stage 1: Intro to AM
+                // Stage 1: Intro to AM - Wider level
+                levelWidth = 1600;
+                levelHeight = 600;
+
+                platforms.push({ x: 0, y: levelHeight - 20, width: levelWidth, height: 20, type: 'floor' });
+
                 player.spawnX = 50; player.spawnY = 500;
+
+                // Section 1: Intro jumps
                 platforms.push({ x: 200, y: 480, width: 100, height: 20 });
                 platforms.push({ x: 350, y: 400, width: 100, height: 20 });
-                platforms.push({ x: 500, y: 320, width: 250, height: 20 });
+                platforms.push({ x: 500, y: 320, width: 150, height: 20 });
+
+                // Spikes below
+                hazards.push({ x: 250, y: levelHeight - 40, width: 300, height: 20 });
+
+                // Section 2: Wider gaps
+                platforms.push({ x: 800, y: 400, width: 80, height: 20 });
+                platforms.push({ x: 1000, y: 300, width: 80, height: 20 });
+                platforms.push({ x: 1200, y: 250, width: 250, height: 20 });
+
+                // Strawberries
+                strawberries.push({ x: 550, y: 280, width: 16, height: 16, collected: false, originY: 280, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 1030, y: 260, width: 16, height: 16, collected: false, originY: 260, floatOffset: Math.random() * Math.PI });
 
                 // Spikes
-                hazards.push({ x: 250, y: canvas.height - 40, width: 100, height: 20 });
+                hazards.push({ x: 600, y: levelHeight - 40, width: 900, height: 20 });
 
                 // Tesca Machine for AM
                 interactables.push({
-                    x: 650, y: 260, width: 60, height: 60,
+                    x: 1350, y: 190, width: 60, height: 60,
                     type: 'tesca', puzzleType: 'AM', active: true
                 });
 
             } else if (stageNum === 2) {
                 // Stage 2: Intro to FM
-                player.spawnX = 50; player.spawnY = 500;
-                platforms.push({ x: 150, y: 480, width: 80, height: 20 });
-                platforms.push({ x: 300, y: 400, width: 80, height: 20 });
-                platforms.push({ x: 450, y: 320, width: 80, height: 20 });
-                platforms.push({ x: 600, y: 240, width: 150, height: 20 });
+                levelWidth = 2400;
+                levelHeight = 800; // Taller level too
 
-                // Spikes
-                hazards.push({ x: 200, y: canvas.height - 40, width: 300, height: 20 });
+                platforms.push({ x: 0, y: levelHeight - 20, width: levelWidth, height: 20, type: 'floor' });
+
+                player.spawnX = 50; player.spawnY = levelHeight - 100;
+
+                // Ascending path
+                platforms.push({ x: 150, y: levelHeight - 120, width: 80, height: 20 });
+                platforms.push({ x: 300, y: levelHeight - 200, width: 80, height: 20 });
+                platforms.push({ x: 450, y: levelHeight - 280, width: 80, height: 20 });
+
+                // Long gap
+                platforms.push({ x: 700, y: levelHeight - 350, width: 200, height: 20 });
+                hazards.push({ x: 150, y: levelHeight - 40, width: 1000, height: 20 });
+
+                // Stepping stones
+                platforms.push({ x: 1000, y: levelHeight - 350, width: 50, height: 20 });
+                platforms.push({ x: 1150, y: levelHeight - 420, width: 50, height: 20 });
+                platforms.push({ x: 1300, y: levelHeight - 500, width: 50, height: 20 });
+                platforms.push({ x: 1450, y: levelHeight - 400, width: 50, height: 20 });
+                platforms.push({ x: 1600, y: levelHeight - 300, width: 50, height: 20 });
+
+                // Final stretch
+                platforms.push({ x: 1800, y: levelHeight - 400, width: 300, height: 20 });
+
+                // Strawberries
+                strawberries.push({ x: 330, y: levelHeight - 240, width: 16, height: 16, collected: false, originY: levelHeight - 240, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 1315, y: levelHeight - 540, width: 16, height: 16, collected: false, originY: levelHeight - 540, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 1850, y: levelHeight - 450, width: 16, height: 16, collected: false, originY: levelHeight - 450, floatOffset: Math.random() * Math.PI });
+
+                hazards.push({ x: 1200, y: levelHeight - 40, width: 1100, height: 20 });
 
                 // Tesca Machine for FM
                 interactables.push({
-                    x: 650, y: 180, width: 60, height: 60,
+                    x: 1950, y: levelHeight - 460, width: 60, height: 60,
                     type: 'tesca', puzzleType: 'FM', active: true
                 });
 
             } else if (stageNum === 3) {
                 // Stage 3: AM + FM Combined
-                player.spawnX = 50; player.spawnY = 500;
+                levelWidth = 3200;
+                levelHeight = 1000;
 
-                // More complex platforming
-                platforms.push({ x: 150, y: 460, width: 50, height: 20 });
-                // hazards.push({ x: 150, y: 440, width: 50, height: 20 }); // Removed spike on first platform to be fair
+                platforms.push({ x: 0, y: levelHeight - 20, width: 200, height: 20, type: 'floor' }); // Small floor
+                platforms.push({ x: 3000, y: levelHeight - 20, width: 200, height: 20, type: 'floor' }); // End floor
 
-                platforms.push({ x: 250, y: 380, width: 50, height: 20 });
-                platforms.push({ x: 100, y: 300, width: 80, height: 20 });
-                platforms.push({ x: 300, y: 220, width: 100, height: 20 });
-                platforms.push({ x: 500, y: 180, width: 80, height: 20 });
-                platforms.push({ x: 650, y: 280, width: 150, height: 20 });
+                player.spawnX = 50; player.spawnY = levelHeight - 100;
 
-                // Big spike pit
-                hazards.push({ x: 100, y: canvas.height - 40, width: 600, height: 20 });
+                // Massive spike pit for most of the level
+                hazards.push({ x: 200, y: levelHeight - 40, width: 2800, height: 20 });
+
+                // Very complex platforming
+                platforms.push({ x: 250, y: levelHeight - 100, width: 50, height: 20 });
+                platforms.push({ x: 400, y: levelHeight - 200, width: 50, height: 20 });
+                platforms.push({ x: 550, y: levelHeight - 300, width: 50, height: 20 });
+                platforms.push({ x: 300, y: levelHeight - 400, width: 80, height: 20 }); // Backwards jump
+                platforms.push({ x: 500, y: levelHeight - 500, width: 50, height: 20 });
+                platforms.push({ x: 700, y: levelHeight - 600, width: 100, height: 20 });
+
+                // Drop down
+                platforms.push({ x: 1000, y: levelHeight - 300, width: 100, height: 20 });
+
+                // Spiky tunnel
+                platforms.push({ x: 1300, y: levelHeight - 300, width: 400, height: 20 });
+                platforms.push({ x: 1300, y: levelHeight - 450, width: 400, height: 20 });
+                hazards.push({ x: 1350, y: levelHeight - 430, width: 300, height: 20 }); // Spikes on ceiling
+
+                // Precision jumps
+                platforms.push({ x: 1800, y: levelHeight - 300, width: 40, height: 20 });
+                platforms.push({ x: 1950, y: levelHeight - 400, width: 40, height: 20 });
+                platforms.push({ x: 2100, y: levelHeight - 500, width: 40, height: 20 });
+                platforms.push({ x: 2300, y: levelHeight - 600, width: 200, height: 20 });
+
+                // Final ascent
+                platforms.push({ x: 2600, y: levelHeight - 700, width: 50, height: 20 });
+                platforms.push({ x: 2800, y: levelHeight - 800, width: 300, height: 20 });
+
+                // Strawberries
+                strawberries.push({ x: 565, y: levelHeight - 340, width: 16, height: 16, collected: false, originY: levelHeight - 340, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 1500, y: levelHeight - 400, width: 16, height: 16, collected: false, originY: levelHeight - 400, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 2110, y: levelHeight - 540, width: 16, height: 16, collected: false, originY: levelHeight - 540, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 2615, y: levelHeight - 740, width: 16, height: 16, collected: false, originY: levelHeight - 740, floatOffset: Math.random() * Math.PI });
 
                 // Tesca Machine for Combined
                 interactables.push({
-                    x: 700, y: 220, width: 60, height: 60,
+                    x: 2950, y: levelHeight - 860, width: 60, height: 60,
                     type: 'tesca', puzzleType: 'COMBINED', active: true
                 });
             }
+
+            // Reset camera instantly to player
+            camera.x = player.spawnX - camera.width / 2;
+            camera.y = player.spawnY - camera.height / 2;
 
             // Reset player to spawn
             resetPlayer();
@@ -472,6 +549,21 @@
             // Fixed multiplier if needed (e.g. dt / 16.66)
             // But right now our physics values are tuned for 60 updates/sec.
 
+            // --- Camera Update ---
+            // Center camera on player
+            camera.targetX = player.x + player.width / 2 - camera.width / 2;
+            camera.targetY = player.y + player.height / 2 - camera.height / 2;
+
+            // Smoothly move camera towards target
+            camera.x += (camera.targetX - camera.x) * camera.lerp;
+            camera.y += (camera.targetY - camera.y) * camera.lerp;
+
+            // Clamp camera to level bounds
+            if (camera.x < 0) camera.x = 0;
+            if (camera.x > levelWidth - camera.width) camera.x = levelWidth - camera.width;
+            if (camera.y < 0) camera.y = 0;
+            if (camera.y > levelHeight - camera.height) camera.y = levelHeight - camera.height;
+
             // Horizontal Movement
             if (keys.ArrowLeft || keys.a) {
                 player.vx -= player.accel;
@@ -492,6 +584,10 @@
                 player.vy = -player.jumpPower;
                 player.grounded = false;
 
+                // Jump Squash and Stretch
+                player.scaleX = 0.5;
+                player.scaleY = 1.5;
+
                 // Add a small jump sound effect using Web Audio API
                 playJumpSound();
             }
@@ -504,11 +600,12 @@
             player.y += player.vy;
 
             // --- Collisions ---
+            let wasGrounded = player.grounded;
             player.grounded = false;
 
-            // Wall collisions (canvas bounds)
+            // Wall collisions (level bounds)
             if (player.x < 0) { player.x = 0; player.vx = 0; }
-            if (player.x + player.width > canvas.width) { player.x = canvas.width - player.width; player.vx = 0; }
+            if (player.x + player.width > levelWidth) { player.x = levelWidth - player.width; player.vx = 0; }
 
             // Platform collisions
             for (let plat of platforms) {
@@ -525,12 +622,38 @@
                 }
             }
 
+            // Landing squash
+            if (!wasGrounded && player.grounded) {
+                player.scaleX = 1.5;
+                player.scaleY = 0.5;
+            }
+
+            // Smoothly return scaling to 1.0 (normal)
+            player.scaleX += (1.0 - player.scaleX) * 0.15;
+            player.scaleY += (1.0 - player.scaleY) * 0.15;
+
+            // In-air dynamic scaling based on vertical velocity
+            if (!player.grounded) {
+                let stretch = Math.abs(player.vy) / 20; // max stretch based on speed
+                player.scaleY = 1.0 + stretch;
+                player.scaleX = 1.0 - stretch * 0.5;
+            }
+
             // Hazard collisions
             for (let haz of hazards) {
                 // Shrink player hitbox slightly for hazards to make it fair
                 let hitBox = {x: player.x+5, y: player.y+5, width: player.width-10, height: player.height-5};
                 if (rectIntersect(hitBox, haz)) {
                     resetPlayer();
+                }
+            }
+
+            // Strawberry collisions
+            for (let berry of strawberries) {
+                if (!berry.collected && rectIntersect(player, berry)) {
+                    berry.collected = true;
+                    totalStrawberriesCollected++;
+                    playCollectSound();
                 }
             }
 
@@ -642,17 +765,15 @@
         // Dialogue State
         let dialogueIndex = -1;
         const dialogueSequence = [
-            { text: "Hoo! You have climbed well. But to truly master the mountain, you must understand the machine that guided you: The Tesca 40501.", block: null },
-            { text: "This is a real Modulation and Demodulation Trainer kit. It contains many separate circuit blocks used to generate and manipulate signals.", block: null },
-            { text: "Let us begin with Frequency Modulation (FM).", block: 'block-fm-mod' },
-            { text: "In FM, the amplitude of the carrier wave stays constant. However, its FREQUENCY (how squished or stretched the waves are) changes depending on the message signal.", block: 'block-fm-mod' },
-            { text: "The Tesca board uses an Audio Oscillator to generate the low-frequency message signal...", block: 'block-audio-osc' },
-            { text: "...and an RF (Radio Frequency) Oscillator to generate the high-frequency carrier wave.", block: 'block-rf-osc' },
-            { text: "These two signals are fed into the FM Modulator block, which produces the final Frequency Modulated wave you matched earlier.", block: 'block-fm-mod' },
-            { text: "Now, let us look at Amplitude Modulation (AM).", block: 'block-am-mod' },
-            { text: "In AM, the frequency of the carrier wave stays constant. Instead, its AMPLITUDE (how tall the waves are) changes to match the shape of the message signal.", block: 'block-am-mod' },
-            { text: "Just like FM, the AM Modulator block takes the Audio (message) and RF (carrier) signals and combines them to create an AM wave envelope.", block: 'block-am-mod' },
-            { text: "These simple principles are how radios transmit voices and data across vast distances! You are now a master of waves.", block: null }
+            { text: "Hoo! You have climbed well. But to truly master the mountain, you must understand the machine that guided you: The Tesca 40501.", area: null },
+            { text: "This is a real Modulation and Demodulation Trainer kit. Let us trace the path of the signals you just manipulated.", area: null },
+            { text: "Every modulation requires a high-frequency carrier wave. It begins here at the Carrier Signal generator.", area: 'area-carrier-signal' },
+            { text: "This carrier wave is fed into the Carrier In terminal, providing the backbone for our transmission.", area: 'area-carrier-in' },
+            { text: "Next, we need the message we want to send—the Audio signal. This low-frequency wave is fed into the Audio In terminal.", area: 'area-audio-in' },
+            { text: "Both the carrier and the audio signals are directed into the core Modulator circuit, powered by these two transistors.", area: 'area-modulator' },
+            { text: "Here, the circuits alter either the Amplitude (AM) or the Frequency (FM) of the carrier wave based on the audio message.", area: 'area-modulator' },
+            { text: "Finally, the newly shaped wave travels through an isolation transformer and is delivered at the Modulated Output, ready for transmission!", area: 'area-output' },
+            { text: "These simple principles are how radios transmit voices and data across vast distances. You are now a master of waves.", area: null }
         ];
 
         function startEpilogue() {
@@ -675,9 +796,9 @@
             document.getElementById('dialogue-text').innerText = current.text;
 
             // Handle highlighting
-            document.querySelectorAll('.circuit-block').forEach(el => el.classList.remove('highlighted-block'));
-            if (current.block) {
-                document.getElementById(current.block).classList.add('highlighted-block');
+            document.querySelectorAll('.highlighted-area').forEach(el => el.style.display = 'none');
+            if (current.area) {
+                document.getElementById(current.area).style.display = 'block';
             }
         }
 
@@ -708,6 +829,28 @@
 
             osc.start();
             osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function playCollectSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.05);
+            osc.frequency.setValueAtTime(1600, audioCtx.currentTime + 0.1);
+
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
         }
 
         function drawPuzzleWaveform() {
@@ -753,6 +896,75 @@
             drawWave(puzzleState.current, '#66bb6a', false);
         }
 
+        function drawMountains(ctx) {
+            // Parallax effect based on camera X
+            let parallaxX = (camera.x * 0.2) % 800;
+
+            // Distant Mountains (Darkest)
+            ctx.fillStyle = '#0f1626';
+            ctx.beginPath();
+            ctx.moveTo(0, 600);
+            for(let i=0; i<3; i++) {
+                let offset = i * 400 - parallaxX;
+                ctx.lineTo(offset, 600);
+                ctx.lineTo(offset + 100, 300);
+                ctx.lineTo(offset + 250, 450);
+                ctx.lineTo(offset + 400, 200);
+            }
+            ctx.lineTo(800, 600);
+            ctx.fill();
+
+            // Mid Mountains (Lighter)
+            parallaxX = (camera.x * 0.4) % 800;
+            ctx.fillStyle = '#1c283d';
+            ctx.beginPath();
+            ctx.moveTo(0, 600);
+            for(let i=0; i<3; i++) {
+                let offset = i * 400 - parallaxX;
+                ctx.lineTo(offset, 600);
+                ctx.lineTo(offset + 150, 350);
+                ctx.lineTo(offset + 300, 500);
+                ctx.lineTo(offset + 400, 250);
+            }
+            ctx.lineTo(800, 600);
+            ctx.fill();
+
+            // Snowcaps on Mid Mountains
+            ctx.fillStyle = '#45a29e';
+            ctx.beginPath();
+            for(let i=0; i<3; i++) {
+                let offset = i * 400 - parallaxX;
+                ctx.moveTo(offset + 150, 350);
+                ctx.lineTo(offset + 120, 400);
+                ctx.lineTo(offset + 180, 400);
+
+                ctx.moveTo(offset + 400, 250);
+                ctx.lineTo(offset + 370, 300);
+                ctx.lineTo(offset + 430, 300);
+            }
+            ctx.fill();
+        }
+
+        function drawTopAudioVisualizer(ctx) {
+            let time = performance.now() / 1000;
+            ctx.strokeStyle = '#66fcf1';
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.5;
+
+            ctx.beginPath();
+            for (let x = 0; x < canvas.width; x += 5) {
+                // Simulate an AM wave
+                let carrier = Math.cos(x * 0.1 + time * 5);
+                let envelope = Math.sin(x * 0.01 + time);
+                let y = 30 + (envelope * carrier) * 20;
+
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.globalAlpha = 1.0;
+        }
+
         function draw(ctx) {
             if (gameState === 'PUZZLE') {
                 drawPuzzleWaveform();
@@ -765,6 +977,9 @@
             // Clear screen
             ctx.fillStyle = GAME_BG;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Mountain Background
+            drawMountains(ctx);
 
             // Draw Snowflakes (Background)
             ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
@@ -784,17 +999,16 @@
             }
 
             if (gameState === 'PLAYING') {
-                // Draw stage info
-                ctx.fillStyle = '#66fcf1';
-                ctx.font = '20px Courier New';
-                ctx.fillText(`Stage ${currentStage}`, 20, 30);
-                if (currentStage === 1) ctx.fillText("Learn: Amplitude Modulation (AM)", 20, 55);
-                if (currentStage === 2) ctx.fillText("Learn: Frequency Modulation (FM)", 20, 55);
-                if (currentStage === 3) ctx.fillText("Final Test: Combined Modulation", 20, 55);
+                ctx.save();
+                ctx.translate(-camera.x, -camera.y);
 
                 // Draw Platforms
                 ctx.fillStyle = PLATFORM_COLOR;
                 for (let plat of platforms) {
+                    // Skip drawing if outside camera view
+                    if (plat.x + plat.width < camera.x || plat.x > camera.x + camera.width ||
+                        plat.y + plat.height < camera.y || plat.y > camera.y + camera.height) continue;
+
                     // Draw icy looking platforms
                     ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
                     ctx.fillStyle = 'rgba(255,255,255,0.3)';
@@ -802,9 +1016,38 @@
                     ctx.fillStyle = PLATFORM_COLOR;
                 }
 
+                // Draw Strawberries
+                let time = performance.now() / 1000;
+                for (let berry of strawberries) {
+                    if (berry.collected) continue;
+                    if (berry.x + berry.width < camera.x || berry.x > camera.x + camera.width ||
+                        berry.y + berry.height < camera.y || berry.y > camera.y + camera.height) continue;
+
+                    // Floating animation
+                    berry.y = berry.originY + Math.sin(time * 3 + berry.floatOffset) * 5;
+
+                    // Draw pixel strawberry
+                    ctx.fillStyle = '#ff1744'; // Red body
+                    ctx.fillRect(berry.x, berry.y + 4, 16, 12);
+                    ctx.fillRect(berry.x + 2, berry.y + 2, 12, 14);
+
+                    ctx.fillStyle = '#69f0ae'; // Green top
+                    ctx.fillRect(berry.x + 4, berry.y, 8, 4);
+                    ctx.fillRect(berry.x + 2, berry.y + 2, 4, 2);
+                    ctx.fillRect(berry.x + 10, berry.y + 2, 4, 2);
+
+                    ctx.fillStyle = 'white'; // Seeds
+                    ctx.fillRect(berry.x + 4, berry.y + 6, 2, 2);
+                    ctx.fillRect(berry.x + 10, berry.y + 8, 2, 2);
+                    ctx.fillRect(berry.x + 6, berry.y + 12, 2, 2);
+                }
+
                 // Draw Hazards (Spikes)
                 ctx.fillStyle = '#ff1744'; // Red spikes
                 for (let haz of hazards) {
+                    if (haz.x + haz.width < camera.x || haz.x > camera.x + camera.width ||
+                        haz.y + haz.height < camera.y || haz.y > camera.y + camera.height) continue;
+
                     // Draw zigzag spikes
                     ctx.beginPath();
                     ctx.moveTo(haz.x, haz.y + haz.height);
@@ -818,6 +1061,9 @@
                 // Draw Interactables (Tesca 40501)
                 for (let item of interactables) {
                     if (item.active) {
+                        if (item.x + item.width < camera.x || item.x > camera.x + camera.width ||
+                            item.y + item.height < camera.y || item.y > camera.y + camera.height) continue;
+
                         // Pixel art style Tesca Machine
                         ctx.fillStyle = '#2c3e50'; // Machine base
                         ctx.fillRect(item.x, item.y, item.width, item.height);
@@ -851,29 +1097,60 @@
                 }
 
                 // Draw player (Simple Celeste-like representation: body + scarf)
+                ctx.save();
+
+                // Move origin to the bottom center of the player for scaling
+                ctx.translate(player.x + player.width / 2, player.y + player.height);
+                ctx.scale(player.scaleX, player.scaleY);
+
+                let drawX = -player.width / 2;
+                let drawY = -player.height;
+
                 ctx.fillStyle = player.color;
-                ctx.fillRect(player.x, player.y, player.width, player.height);
+                ctx.fillRect(drawX, drawY, player.width, player.height);
 
                 // Draw eyes (looking in direction of movement)
                 ctx.fillStyle = 'white';
                 let eyeOffsetX = player.vx > 0.5 ? 6 : (player.vx < -0.5 ? -6 : 0);
 
                 // Left eye
-                ctx.fillRect(player.x + 6 + eyeOffsetX, player.y + 8, 6, 6);
+                ctx.fillRect(drawX + 6 + eyeOffsetX, drawY + 8, 6, 6);
                 // Right eye
-                ctx.fillRect(player.x + player.width - 12 + eyeOffsetX, player.y + 8, 6, 6);
+                ctx.fillRect(drawX + player.width - 12 + eyeOffsetX, drawY + 8, 6, 6);
 
                 // Pupils
                 ctx.fillStyle = 'black';
-                ctx.fillRect(player.x + 8 + eyeOffsetX, player.y + 10, 2, 2);
-                ctx.fillRect(player.x + player.width - 10 + eyeOffsetX, player.y + 10, 2, 2);
+                ctx.fillRect(drawX + 8 + eyeOffsetX, drawY + 10, 2, 2);
+                ctx.fillRect(drawX + player.width - 10 + eyeOffsetX, drawY + 10, 2, 2);
 
                 // Scarf simple trail
                 if (Math.abs(player.vx) > 1) {
                     ctx.fillStyle = player.color;
                     let trailDir = player.vx > 0 ? -1 : 1;
-                    ctx.fillRect(player.x + (trailDir > 0 ? player.width : 0) + trailDir * 10, player.y + 15, 10, 8);
+                    ctx.fillRect(drawX + (trailDir > 0 ? player.width : 0) + trailDir * 10, drawY + 15, 10, 8);
                 }
+
+                ctx.restore(); // Restore from player scaling
+
+                ctx.restore(); // Restore to screen coordinates (from camera translation)
+
+                // Top Audio Wave Visualizer
+                drawTopAudioVisualizer(ctx);
+
+                // Draw stage info (HUD)
+                ctx.fillStyle = '#66fcf1';
+                ctx.font = '20px Courier New';
+                ctx.fillText(`Stage ${currentStage}`, 20, 30);
+                if (currentStage === 1) ctx.fillText("Learn: Amplitude Modulation (AM)", 20, 55);
+                if (currentStage === 2) ctx.fillText("Learn: Frequency Modulation (FM)", 20, 55);
+                if (currentStage === 3) ctx.fillText("Final Test: Combined Modulation", 20, 55);
+
+                // Draw Strawberry count HUD
+                ctx.fillStyle = '#ff1744';
+                ctx.fillRect(canvas.width - 100, 20, 16, 16);
+                ctx.fillStyle = 'white';
+                ctx.font = '20px Courier New';
+                ctx.fillText(`x ${totalStrawberriesCollected}`, canvas.width - 70, 35);
             }
         }
 
