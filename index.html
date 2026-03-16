@@ -150,7 +150,7 @@
             </div>
 
             <button onclick="startGame()">Start Climb</button>
-            <p style="font-size: 0.8rem; margin-top: 20px; color: #888;">Controls: A/D or Left/Right Arrow to move. Spacebar to jump. 'E' to interact with the Tesca 40501.</p>
+            <p style="font-size: 0.8rem; margin-top: 20px; color: #888;">Controls: A/D or Left/Right Arrow to move. Spacebar to jump. Shift to dash. 'E' to interact with the Tesca 40501.</p>
         </div>
 
         <!-- Tesca 40501 Puzzle UI Overlay -->
@@ -241,11 +241,14 @@
             ArrowLeft: false,
             ArrowRight: false,
             ArrowUp: false,
+            ArrowDown: false,
             a: false,
             d: false,
             w: false,
+            s: false,
             e: false,
-            ' ': false
+            ' ': false,
+            Shift: false
         };
 
         // Player State
@@ -266,7 +269,17 @@
             spawnX: 50,
             spawnY: 500,
             scaleX: 1.0,
-            scaleY: 1.0
+            scaleY: 1.0,
+            facingDirection: 1, // 1 for right, -1 for left
+
+            // Dash properties
+            canDash: true,
+            isDashing: false,
+            dashTimer: 0,
+            dashDuration: 10, // Frames at 60fps
+            dashSpeed: 18,
+            dashDirX: 0,
+            dashDirY: 0
         };
 
         // Camera Object
@@ -422,6 +435,8 @@
             player.y = player.spawnY;
             player.vx = 0;
             player.vy = 0;
+            player.isDashing = false;
+            player.canDash = true;
 
             // Death sound/effect placeholder
         }
@@ -536,36 +551,84 @@
             if (camera.y < 0) camera.y = 0;
             if (camera.y > levelHeight - camera.height) camera.y = levelHeight - camera.height;
 
-            // Horizontal Movement
-            if (keys.ArrowLeft || keys.a) {
-                player.vx -= player.accel;
-            } else if (keys.ArrowRight || keys.d) {
-                player.vx += player.accel;
+            // Dash logic
+            if (keys.Shift && player.canDash && !player.isDashing) {
+                player.isDashing = true;
+                player.canDash = false;
+                player.dashTimer = player.dashDuration;
+
+                // Determine dash direction from input
+                let dx = 0;
+                let dy = 0;
+                if (keys.ArrowLeft || keys.a) dx = -1;
+                if (keys.ArrowRight || keys.d) dx = 1;
+                if (keys.ArrowUp || keys.w) dy = -1;
+                if (keys.ArrowDown || keys.s) dy = 1;
+
+                // If no input, dash in facing direction
+                if (dx === 0 && dy === 0) {
+                    dx = player.facingDirection;
+                }
+
+                // Normalize diagonal dash
+                if (dx !== 0 && dy !== 0) {
+                    let length = Math.sqrt(dx*dx + dy*dy);
+                    dx /= length;
+                    dy /= length;
+                }
+
+                player.dashDirX = dx;
+                player.dashDirY = dy;
+
+                // Audio for dash
+                playDashSound();
             }
 
-            // Apply friction
-            player.vx *= player.friction;
+            if (player.isDashing) {
+                player.dashTimer--;
+                player.vx = player.dashDirX * player.dashSpeed;
+                player.vy = player.dashDirY * player.dashSpeed;
 
-            // Cap speed
-            if (Math.abs(player.vx) > player.maxSpeed) {
-                player.vx = Math.sign(player.vx) * player.maxSpeed;
+                if (player.dashTimer <= 0) {
+                    player.isDashing = false;
+                    // Reset velocities so you don't keep flying out of control
+                    player.vx *= 0.5;
+                    player.vy *= 0.5;
+                }
+            } else {
+                // Horizontal Movement
+                if (keys.ArrowLeft || keys.a) {
+                    player.vx -= player.accel;
+                    player.facingDirection = -1;
+                } else if (keys.ArrowRight || keys.d) {
+                    player.vx += player.accel;
+                    player.facingDirection = 1;
+                }
+
+                // Apply friction
+                player.vx *= player.friction;
+
+                // Cap speed
+                if (Math.abs(player.vx) > player.maxSpeed) {
+                    player.vx = Math.sign(player.vx) * player.maxSpeed;
+                }
+
+                // Jumping
+                if (keys[' '] && player.grounded) {
+                    player.vy = -player.jumpPower;
+                    player.grounded = false;
+
+                    // Jump Squash and Stretch
+                    player.scaleX = 0.5;
+                    player.scaleY = 1.5;
+
+                    // Add a small jump sound effect using Web Audio API
+                    playJumpSound();
+                }
+
+                // Apply gravity
+                player.vy += player.gravity;
             }
-
-            // Jumping
-            if (keys[' '] && player.grounded) {
-                player.vy = -player.jumpPower;
-                player.grounded = false;
-
-                // Jump Squash and Stretch
-                player.scaleX = 0.5;
-                player.scaleY = 1.5;
-
-                // Add a small jump sound effect using Web Audio API
-                playJumpSound();
-            }
-
-            // Apply gravity
-            player.vy += player.gravity;
 
             // Apply velocity to position
             player.x += player.vx;
@@ -582,7 +645,7 @@
             // Platform collisions
             for (let plat of platforms) {
                 // Very simple Top-only collision for platforms
-                if (player.vy > 0 &&
+                if (player.vy >= 0 &&
                     player.y + player.height >= plat.y &&
                     player.y + player.height <= plat.y + player.vy + 2 &&
                     player.x + player.width > plat.x &&
@@ -591,6 +654,8 @@
                     player.y = plat.y - player.height;
                     player.vy = 0;
                     player.grounded = true;
+                    // Reset dash when hitting ground
+                    player.canDash = true;
                 }
             }
 
@@ -803,6 +868,27 @@
             osc.stop(audioCtx.currentTime + 0.1);
         }
 
+        function playDashSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.15);
+
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+
         function playCollectSound() {
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
@@ -872,6 +958,11 @@
         bgImage.src = 'celeste-switch-review-5.jpeg';
         let bgLoaded = false;
         bgImage.onload = () => { bgLoaded = true; };
+
+        const charImage = new Image();
+        charImage.src = 'character.png';
+        let charLoaded = false;
+        charImage.onload = () => { charLoaded = true; };
 
         function drawMountains(ctx) {
             if (!bgLoaded) return;
@@ -1036,7 +1127,14 @@
                     }
                 }
 
-                // Draw player (Simple Celeste-like representation: body + scarf)
+                // If dashing, maybe draw a simple trail or tint
+                if (player.isDashing) {
+                    ctx.fillStyle = 'rgba(102, 252, 241, 0.5)';
+                    ctx.fillRect(player.x - player.dashDirX*20, player.y - player.dashDirY*20, player.width, player.height);
+                    ctx.fillRect(player.x - player.dashDirX*40, player.y - player.dashDirY*40, player.width, player.height);
+                }
+
+                // Draw player
                 ctx.save();
 
                 // Move origin to the bottom center of the player for scaling
@@ -1046,28 +1144,42 @@
                 let drawX = -player.width / 2;
                 let drawY = -player.height;
 
-                ctx.fillStyle = player.color;
-                ctx.fillRect(drawX, drawY, player.width, player.height);
+                if (charLoaded) {
+                    // Coordinates: left=250, top=480, right=620, bottom=1100
+                    // width = 370, height = 620
 
-                // Draw eyes (looking in direction of movement)
-                ctx.fillStyle = 'white';
-                let eyeOffsetX = player.vx > 0.5 ? 6 : (player.vx < -0.5 ? -6 : 0);
+                    // Flip the character if facing left
+                    if (player.facingDirection === -1) {
+                        ctx.scale(-1, 1);
+                    }
 
-                // Left eye
-                ctx.fillRect(drawX + 6 + eyeOffsetX, drawY + 8, 6, 6);
-                // Right eye
-                ctx.fillRect(drawX + player.width - 12 + eyeOffsetX, drawY + 8, 6, 6);
-
-                // Pupils
-                ctx.fillStyle = 'black';
-                ctx.fillRect(drawX + 8 + eyeOffsetX, drawY + 10, 2, 2);
-                ctx.fillRect(drawX + player.width - 10 + eyeOffsetX, drawY + 10, 2, 2);
-
-                // Scarf simple trail
-                if (Math.abs(player.vx) > 1) {
+                    let imgDrawWidth = 45;
+                    let imgDrawHeight = 75;
+                    ctx.drawImage(charImage, 250, 480, 370, 620, -imgDrawWidth/2, -imgDrawHeight, imgDrawWidth, imgDrawHeight);
+                } else {
                     ctx.fillStyle = player.color;
-                    let trailDir = player.vx > 0 ? -1 : 1;
-                    ctx.fillRect(drawX + (trailDir > 0 ? player.width : 0) + trailDir * 10, drawY + 15, 10, 8);
+                    ctx.fillRect(drawX, drawY, player.width, player.height);
+
+                    // Draw eyes (looking in direction of movement)
+                    ctx.fillStyle = 'white';
+                    let eyeOffsetX = player.vx > 0.5 ? 6 : (player.vx < -0.5 ? -6 : 0);
+
+                    // Left eye
+                    ctx.fillRect(drawX + 6 + eyeOffsetX, drawY + 8, 6, 6);
+                    // Right eye
+                    ctx.fillRect(drawX + player.width - 12 + eyeOffsetX, drawY + 8, 6, 6);
+
+                    // Pupils
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(drawX + 8 + eyeOffsetX, drawY + 10, 2, 2);
+                    ctx.fillRect(drawX + player.width - 10 + eyeOffsetX, drawY + 10, 2, 2);
+
+                    // Scarf simple trail
+                    if (Math.abs(player.vx) > 1) {
+                        ctx.fillStyle = player.color;
+                        let trailDir = player.vx > 0 ? -1 : 1;
+                        ctx.fillRect(drawX + (trailDir > 0 ? player.width : 0) + trailDir * 10, drawY + 15, 10, 8);
+                    }
                 }
 
                 ctx.restore(); // Restore from player scaling
