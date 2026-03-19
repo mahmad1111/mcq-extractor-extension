@@ -21,18 +21,25 @@
 
         #game-container {
             position: relative;
-            width: 800px;
-            height: 600px;
+            /* Container will scale via CSS while maintaining 16:9 ratio */
+            width: 100%;
+            max-width: 1920px;
+            aspect-ratio: 16 / 9;
             background-color: #1f2833;
             border: 4px solid #45a29e;
             box-shadow: 0 0 20px #66fcf1;
             image-rendering: pixelated; /* Essential for pixel art */
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         canvas {
             display: block;
             width: 100%;
             height: 100%;
+            object-fit: contain;
         }
 
         /* UI Overlays */
@@ -134,7 +141,7 @@
 
     <div id="game-container">
         <!-- Game Canvas -->
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <canvas id="gameCanvas" width="1920" height="1080"></canvas>
 
         <!-- Start Menu Overlay -->
         <div id="start-menu" class="overlay">
@@ -151,6 +158,30 @@
 
             <button onclick="startGame()">Start Climb</button>
             <p style="font-size: 0.8rem; margin-top: 20px; color: #888;">Controls: A/D or Left/Right Arrow to move. Spacebar to jump. Shift to dash. 'E' to interact with the Tesca 40501.</p>
+        </div>
+
+        <!-- Tesca 40501 Puzzle UI Overlay -->
+        <!-- Radio Tuning Minigame Overlay -->
+        <div id="tuning-menu" class="overlay hidden">
+            <h1>Radio Tuning</h1>
+            <p>Find the resonance frequency to clear the static and lock onto the signal.</p>
+
+            <div style="background: #2c3e50; padding: 20px; border-radius: 10px; border: 4px solid #cfd8dc; display: flex; flex-direction: column; align-items: center; position: relative;">
+
+                <!-- Static Display -->
+                <div id="tuning-static" style="width: 300px; height: 100px; background-color: #000; overflow: hidden; position: relative; border: 2px solid #81c784; border-radius: 5px; margin-bottom: 20px;">
+                    <canvas id="tuningCanvas" width="300" height="100"></canvas>
+                </div>
+
+                <!-- Tuning Dial -->
+                <div style="position: relative; width: 150px; height: 150px; border-radius: 50%; background: #455a64; border: 4px solid #90a4ae; display: flex; justify-content: center; align-items: center;">
+                    <div id="tuning-knob" style="width: 100px; height: 100px; border-radius: 50%; background: #eceff1; border: 2px solid #cfd8dc; position: relative; cursor: grab; transform: rotate(0deg); box-shadow: inset 0 -5px 10px rgba(0,0,0,0.2);">
+                        <div style="width: 10px; height: 30px; background: #ef5350; position: absolute; top: 5px; left: 45px; border-radius: 2px;"></div>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.9rem;">Drag the knob to tune</p>
+                <button onclick="closeTuning(false)" style="background-color: #e53935; border-color: #c62828;">Abort</button>
+            </div>
         </div>
 
         <!-- Tesca 40501 Puzzle UI Overlay -->
@@ -212,10 +243,20 @@
         <div id="win-screen" class="overlay hidden">
             <h1 style="color: #66bb6a;">SUMMIT REACHED!</h1>
             <p>You have mastered Amplitude and Frequency Modulation using the Tesca 40501.</p>
-            <p>Congratulations, Climber!</p>
+            <h2 id="final-grade" style="color: #ffeb3b; font-size: 3rem; margin: 10px 0;">Grade: ?</h2>
+            <p id="grade-message" style="font-size: 1.2rem; margin-bottom: 20px;">...</p>
             <button onclick="location.reload()">Climb Again</button>
         </div>
 
+        <!-- Secret Lab Overlay -->
+        <div id="secret-lab" class="overlay hidden" style="background-color: #0b0c10;">
+            <h1 style="color: #66fcf1; font-family: 'Courier New', monospace;">Armstrong's Secret Lab</h1>
+            <div style="border: 4px solid #66fcf1; padding: 10px; background: #000; margin-bottom: 20px;">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJm4dNwPP6T0iA6X4qGzhCPsaJmf1ATm5Dpw&s" alt="Edwin Armstrong" style="max-width: 400px; display: block;">
+            </div>
+            <p style="font-size: 1.2rem; color: #fff;">"Thank you for saving my invention from oblivion."</p>
+            <button onclick="exitSecretLab()" style="background-color: #e53935; border-color: #c62828;">Return to Mountain</button>
+        </div>
 
     </div>
 
@@ -228,12 +269,24 @@
         const ctx = canvas.getContext('2d');
         let animationFrameId;
 
+        // Tuning Minigame State
+        let tuningState = {
+            active: false,
+            knobAngle: 0,
+            targetAngle: 0,
+            isDragging: false,
+            pendingPuzzleType: ''
+        };
+        const tuningCanvas = document.getElementById('tuningCanvas');
+        const tuningCtx = tuningCanvas.getContext('2d');
+        const tuningKnob = document.getElementById('tuning-knob');
+
         // Colors
         let selectedCharacterColor = '#e53935'; // Default Red
         const GAME_BG = '#1f2833';
         const PLATFORM_COLOR = '#c5c6c7';
 
-        let gameState = 'MENU'; // MENU, PLAYING, PUZZLE
+        let gameState = 'MENU'; // MENU, PLAYING, PUZZLE, TUNING, SECRET
         let currentStage = 1;
 
         // Input State
@@ -255,8 +308,8 @@
         const player = {
             x: 50,
             y: 500,
-            width: 30,
-            height: 40,
+            width: 50,
+            height: 70,
             vx: 0,
             vy: 0,
             maxSpeed: 6,
@@ -286,8 +339,8 @@
         const camera = {
             x: 0,
             y: 0,
-            width: 800,
-            height: 600,
+            width: 1920,
+            height: 1080,
             targetX: 0,
             targetY: 0,
             lerp: 0.1 // Smoothness of camera follow
@@ -298,126 +351,176 @@
         let hazards = []; // Spikes
         let interactables = []; // Tesca 40501 machines
         let strawberries = []; // Collectibles
-        let levelWidth = 800;
-        let levelHeight = 600;
+        let doors = []; // Entrances to secret areas
+        let levelWidth = 1920;
+        let levelHeight = 1080;
+
+        // Lore Collectibles & Power-ups
+        let loreCollectibles = [];
+        let collectedLore = {
+            '10K Resistor': false,
+            'Capacitor': false,
+            'OA79 Diode': false,
+            'BF-195 Transistor': false
+        };
+        let powerups = [];
+        let filterActive = false;
+        let filterTimer = 0; // Remaining seconds
 
         // Progression
         let totalStrawberriesCollected = 0;
 
-        // Particle system for snow
-        let snowflakes = [];
-        for(let i=0; i<100; i++) {
-            snowflakes.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                radius: Math.random() * 2 + 1,
-                speed: Math.random() * 2 + 1,
-                drift: Math.random() * 2 - 1
-            });
+        // Weather systems
+        let weatherType = 'snow'; // 'snow', 'rain'
+        let lightningFlashTimer = 0; // Frames remaining for lightning flash
+        let isLightningStriking = false;
+
+        let weatherParticles = [];
+        function initWeather(type) {
+            weatherType = type;
+            weatherParticles = [];
+            let count = type === 'rain' ? 200 : 100;
+            for(let i=0; i<count; i++) {
+                weatherParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: type === 'rain' ? 1 : (Math.random() * 2 + 1),
+                    length: type === 'rain' ? (Math.random() * 10 + 10) : 0,
+                    speed: type === 'rain' ? (Math.random() * 5 + 10) : (Math.random() * 2 + 1),
+                    drift: type === 'rain' ? 1 : (Math.random() * 2 - 1)
+                });
+            }
         }
+        initWeather('snow');
 
         function loadStage(stageNum) {
             platforms = [];
             hazards = [];
             interactables = [];
             strawberries = [];
+            loreCollectibles = [];
+            powerups = [];
+            doors = [];
 
             if (stageNum === 1) {
-                // Stage 1: Intro to AM - Very Easy
-                levelWidth = 1600;
-                levelHeight = 600;
+                // Stage 1: Intro to AM - Max jump height is roughly ~150 pixels with player's jump power (15) and gravity (0.8).
+                // Max horizontal dash is fast but jump distance is standard.
+                // We keep the level wide but compress the vertical increments.
+                initWeather('rain');
+                levelWidth = 3840; // Double 1920 width
+                levelHeight = 1080;
 
-                platforms.push({ x: 0, y: levelHeight - 20, width: levelWidth, height: 20, type: 'floor' });
+                platforms.push({ x: 0, y: levelHeight - 40, width: levelWidth, height: 40, type: 'floor' });
 
-                player.spawnX = 50; player.spawnY = 500;
+                player.spawnX = 100; player.spawnY = levelHeight - 150;
 
-                // Section 1: Simple stairs
-                platforms.push({ x: 200, y: 480, width: 200, height: 20 });
-                platforms.push({ x: 450, y: 400, width: 200, height: 20 });
-                platforms.push({ x: 700, y: 320, width: 800, height: 20 });
+                // Section 1: Stairs. Max Y jump is ~140, so gaps will be 100-120 pixels high max.
+                platforms.push({ x: 400, y: levelHeight - 140, width: 400, height: 40 });
+                platforms.push({ x: 900, y: levelHeight - 240, width: 400, height: 40 });
+                platforms.push({ x: 1400, y: levelHeight - 340, width: 1200, height: 40 }); // Long platform
+                platforms.push({ x: 2700, y: levelHeight - 440, width: 1000, height: 40 });
 
-                // Strawberries (easy to grab)
-                strawberries.push({ x: 550, y: 360, width: 16, height: 16, collected: false, originY: 360, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 1030, y: 280, width: 16, height: 16, collected: false, originY: 280, floatOffset: Math.random() * Math.PI });
+                // Strawberries
+                strawberries.push({ x: 1100, y: levelHeight - 300, width: 24, height: 24, collected: false, originY: levelHeight - 300, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 1800, y: levelHeight - 400, width: 24, height: 24, collected: false, originY: levelHeight - 400, floatOffset: Math.random() * Math.PI });
+
+                // Lore Collectibles
+                loreCollectibles.push({ name: '10K Resistor', color: '#ffeb3b', x: 1600, y: levelHeight - 400, width: 30, height: 30, collected: collectedLore['10K Resistor'], originY: levelHeight - 400, floatOffset: Math.random() * Math.PI });
+
+                // Power-up
+                powerups.push({ type: 'Low Pass Filter', color: '#29b6f6', x: 2300, y: levelHeight - 400, width: 36, height: 36, collected: false, originY: levelHeight - 400, floatOffset: Math.random() * Math.PI });
 
                 // Spikes: NONE. Just floor.
 
                 // Tesca Machine for AM
                 interactables.push({
-                    x: 1350, y: 260, width: 60, height: 60,
+                    x: 3400, y: levelHeight - 540, width: 100, height: 100,
                     type: 'tesca', puzzleType: 'AM', active: true
                 });
 
             } else if (stageNum === 2) {
-                // Stage 2: Intro to FM (Very Easy)
-                levelWidth = 2400;
-                levelHeight = 800; // Taller level too
+                // Stage 2: Intro to FM
+                initWeather('snow');
+                levelWidth = 5760; // 3 screens wide
+                levelHeight = 2160; // 2 screens tall
 
-                platforms.push({ x: 0, y: levelHeight - 20, width: levelWidth, height: 20, type: 'floor' });
+                platforms.push({ x: 0, y: levelHeight - 40, width: levelWidth, height: 40, type: 'floor' });
 
-                player.spawnX = 50; player.spawnY = levelHeight - 100;
+                player.spawnX = 100; player.spawnY = levelHeight - 150;
 
-                // Ascending path (massive platforms, tiny gaps)
-                platforms.push({ x: 150, y: levelHeight - 100, width: 250, height: 20 });
-                platforms.push({ x: 450, y: levelHeight - 180, width: 250, height: 20 });
-                platforms.push({ x: 750, y: levelHeight - 260, width: 250, height: 20 });
+                // Ascending path (Gap max ~120px up)
+                platforms.push({ x: 400, y: levelHeight - 140, width: 400, height: 40 });
+                platforms.push({ x: 1000, y: levelHeight - 240, width: 400, height: 40 });
+                platforms.push({ x: 1600, y: levelHeight - 340, width: 400, height: 40 });
 
-                // Long safe bridge
-                platforms.push({ x: 1050, y: levelHeight - 320, width: 500, height: 20 });
+                // Long safe bridge higher up
+                platforms.push({ x: 2200, y: levelHeight - 440, width: 1000, height: 40 });
 
-                // Easy stepping stones (much wider)
-                platforms.push({ x: 1600, y: levelHeight - 380, width: 150, height: 20 });
-                platforms.push({ x: 1800, y: levelHeight - 440, width: 150, height: 20 });
+                // Easy stepping stones
+                platforms.push({ x: 3400, y: levelHeight - 540, width: 300, height: 40 });
+                platforms.push({ x: 3900, y: levelHeight - 640, width: 300, height: 40 });
 
                 // Final stretch
-                platforms.push({ x: 2000, y: levelHeight - 440, width: 300, height: 20 });
+                platforms.push({ x: 4400, y: levelHeight - 740, width: 800, height: 40 });
 
-                // Strawberries (moved to be safe)
-                strawberries.push({ x: 550, y: levelHeight - 220, width: 16, height: 16, collected: false, originY: levelHeight - 220, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 1300, y: levelHeight - 360, width: 16, height: 16, collected: false, originY: levelHeight - 360, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 1850, y: levelHeight - 480, width: 16, height: 16, collected: false, originY: levelHeight - 480, floatOffset: Math.random() * Math.PI });
+                // Strawberries
+                strawberries.push({ x: 1200, y: levelHeight - 300, width: 24, height: 24, collected: false, originY: levelHeight - 300, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 2700, y: levelHeight - 500, width: 24, height: 24, collected: false, originY: levelHeight - 500, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 4050, y: levelHeight - 700, width: 24, height: 24, collected: false, originY: levelHeight - 700, floatOffset: Math.random() * Math.PI });
+
+                // Lore Collectibles
+                loreCollectibles.push({ name: 'Capacitor', color: '#ab47bc', x: 1800, y: levelHeight - 400, width: 30, height: 30, collected: collectedLore['Capacitor'], originY: levelHeight - 400, floatOffset: Math.random() * Math.PI });
+                loreCollectibles.push({ name: 'OA79 Diode', color: '#ff7043', x: 3550, y: levelHeight - 600, width: 30, height: 30, collected: collectedLore['OA79 Diode'], originY: levelHeight - 600, floatOffset: Math.random() * Math.PI });
 
                 // Hazards: NONE. Completely safe ground.
 
                 // Tesca Machine for FM
                 interactables.push({
-                    x: 2150, y: levelHeight - 500, width: 60, height: 60,
+                    x: 4800, y: levelHeight - 840, width: 100, height: 100,
                     type: 'tesca', puzzleType: 'FM', active: true
                 });
 
+                // Secret Lab Door (accessible from floor below final stretch)
+                platforms.push({ x: 4500, y: levelHeight - 540, width: 200, height: 40 });
+                doors.push({ x: 4580, y: levelHeight - 640, width: 60, height: 100, type: 'secret_lab' });
+
             } else if (stageNum === 3) {
-                // Stage 3: AM + FM Combined (Very Easy Version)
-                levelWidth = 3200;
-                levelHeight = 1000;
+                // Stage 3: AM + FM Combined
+                initWeather('snow');
+                levelWidth = 7680; // 4 screens wide
+                levelHeight = 3240; // 3 screens tall
 
-                platforms.push({ x: 0, y: levelHeight - 20, width: 3200, height: 20, type: 'floor' }); // Full safe floor everywhere
+                platforms.push({ x: 0, y: levelHeight - 40, width: levelWidth, height: 40, type: 'floor' });
 
-                player.spawnX = 50; player.spawnY = levelHeight - 100;
+                player.spawnX = 100; player.spawnY = levelHeight - 150;
 
                 // Spikes: NONE.
 
-                // Simplified platforming (very gentle stairs pattern)
-                platforms.push({ x: 250, y: levelHeight - 100, width: 250, height: 20 });
-                platforms.push({ x: 550, y: levelHeight - 200, width: 250, height: 20 });
-                platforms.push({ x: 850, y: levelHeight - 300, width: 250, height: 20 });
-                platforms.push({ x: 1150, y: levelHeight - 400, width: 400, height: 20 });
+                // Simplified platforming
+                platforms.push({ x: 500, y: levelHeight - 140, width: 500, height: 40 });
+                platforms.push({ x: 1200, y: levelHeight - 240, width: 500, height: 40 });
+                platforms.push({ x: 1900, y: levelHeight - 340, width: 500, height: 40 });
+                platforms.push({ x: 2600, y: levelHeight - 440, width: 800, height: 40 });
 
-                // Simple flat bridge crossing instead of spiky tunnels
-                platforms.push({ x: 1650, y: levelHeight - 400, width: 600, height: 20 });
+                // Simple flat bridge crossing
+                platforms.push({ x: 3600, y: levelHeight - 540, width: 1200, height: 40 });
 
                 // Gentle final ascent
-                platforms.push({ x: 2350, y: levelHeight - 500, width: 250, height: 20 });
-                platforms.push({ x: 2650, y: levelHeight - 600, width: 500, height: 20 });
+                platforms.push({ x: 5000, y: levelHeight - 640, width: 500, height: 40 });
+                platforms.push({ x: 5700, y: levelHeight - 740, width: 1000, height: 40 });
 
-                // Strawberries (Placed in obvious easy spots)
-                strawberries.push({ x: 650, y: levelHeight - 240, width: 16, height: 16, collected: false, originY: levelHeight - 240, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 1350, y: levelHeight - 440, width: 16, height: 16, collected: false, originY: levelHeight - 440, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 1950, y: levelHeight - 440, width: 16, height: 16, collected: false, originY: levelHeight - 440, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 2450, y: levelHeight - 540, width: 16, height: 16, collected: false, originY: levelHeight - 540, floatOffset: Math.random() * Math.PI });
+                // Strawberries
+                strawberries.push({ x: 1450, y: levelHeight - 300, width: 24, height: 24, collected: false, originY: levelHeight - 300, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 3000, y: levelHeight - 500, width: 24, height: 24, collected: false, originY: levelHeight - 500, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 4200, y: levelHeight - 600, width: 24, height: 24, collected: false, originY: levelHeight - 600, floatOffset: Math.random() * Math.PI });
+                strawberries.push({ x: 5250, y: levelHeight - 700, width: 24, height: 24, collected: false, originY: levelHeight - 700, floatOffset: Math.random() * Math.PI });
+
+                // Lore Collectibles
+                loreCollectibles.push({ name: 'BF-195 Transistor', color: '#8d6e63', x: 4800, y: levelHeight - 600, width: 30, height: 30, collected: collectedLore['BF-195 Transistor'], originY: levelHeight - 600, floatOffset: Math.random() * Math.PI });
 
                 // Tesca Machine for Combined
                 interactables.push({
-                    x: 2950, y: levelHeight - 660, width: 60, height: 60,
+                    x: 6200, y: levelHeight - 840, width: 100, height: 100,
                     type: 'tesca', puzzleType: 'COMBINED', active: true
                 });
             }
@@ -531,6 +634,22 @@
         }
 
         function update(dt) {
+            // Weather updates (runs even during puzzle for lightning sync)
+            if (weatherType === 'rain') {
+                if (Math.random() < 0.01) { // 1% chance per frame for lightning
+                    lightningFlashTimer = 10;
+                    isLightningStriking = true;
+                    // playThunderSound() could go here
+                }
+                if (lightningFlashTimer > 0) {
+                    lightningFlashTimer--;
+                } else {
+                    isLightningStriking = false;
+                }
+            } else {
+                isLightningStriking = false;
+            }
+
             if (gameState !== 'PLAYING') return;
 
             // Fixed multiplier if needed (e.g. dt / 16.66)
@@ -694,17 +813,157 @@
                 }
             }
 
+            // Lore Collectibles collisions
+            for (let lore of loreCollectibles) {
+                if (!lore.collected && rectIntersect(player, lore)) {
+                    lore.collected = true;
+                    collectedLore[lore.name] = true;
+                    playCollectSound();
+                }
+            }
+
+            // Power-up collisions
+            for (let pup of powerups) {
+                if (!pup.collected && rectIntersect(player, pup)) {
+                    pup.collected = true;
+                    if (pup.type === 'Low Pass Filter') {
+                        filterActive = true;
+                        filterTimer = 10.0; // 10 seconds
+                        playCollectSound(); // Can make a distinct sound later if desired
+                    }
+                }
+            }
+
+            // Update Filter Timer
+            if (filterActive) {
+                filterTimer -= (dt / 1000);
+                if (filterTimer <= 0) {
+                    filterTimer = 0;
+                    filterActive = false;
+                }
+            }
+
+            // Door Collision
+            for (let door of doors) {
+                if (rectIntersect(player, door)) {
+                    if (keys.ArrowUp || keys.w) {
+                        if (door.type === 'secret_lab') {
+                            enterSecretLab();
+                            keys.ArrowUp = false;
+                            keys.w = false;
+                        }
+                    }
+                }
+            }
+
             // Interactable collision (Tesca Machine)
             for (let item of interactables) {
                 if (item.active && rectIntersect(player, item)) {
                     // Show interact prompt
                     if (keys.e) {
-                        openPuzzle(item.puzzleType);
+                        openTuning(item.puzzleType);
                         keys.e = false; // Prevent rapid triggering
                     }
                 }
             }
         }
+
+        // --- TUNING MINIGAME ---
+        function openTuning(puzzleType) {
+            gameState = 'TUNING';
+            tuningState.active = true;
+            tuningState.pendingPuzzleType = puzzleType;
+            tuningState.knobAngle = Math.random() * 360;
+            tuningState.targetAngle = Math.random() * 360;
+            // Ensure target is somewhat far from start
+            while(Math.abs(tuningState.targetAngle - tuningState.knobAngle) < 60) {
+                tuningState.targetAngle = Math.random() * 360;
+            }
+
+            updateTuningUI();
+            document.getElementById('tuning-menu').classList.remove('hidden');
+        }
+
+        function closeTuning(success) {
+            tuningState.active = false;
+            document.getElementById('tuning-menu').classList.add('hidden');
+            if (success) {
+                openPuzzle(tuningState.pendingPuzzleType);
+            } else {
+                gameState = 'PLAYING';
+            }
+        }
+
+        // Mouse events for Tuning Knob
+        tuningKnob.addEventListener('mousedown', (e) => { tuningState.isDragging = true; });
+        window.addEventListener('mouseup', () => { tuningState.isDragging = false; });
+        window.addEventListener('mousemove', (e) => {
+            if (!tuningState.isDragging || !tuningState.active) return;
+
+            const rect = tuningKnob.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            // Calculate angle from center to mouse
+            let angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+            // Offset so top is 0
+            angle = (angle + 90 + 360) % 360;
+
+            tuningState.knobAngle = angle;
+            updateTuningUI();
+        });
+
+        function updateTuningUI() {
+            tuningKnob.style.transform = `rotate(${tuningState.knobAngle}deg)`;
+
+            // Calculate distance to target (shortest angular distance)
+            let diff = Math.abs(tuningState.targetAngle - tuningState.knobAngle);
+            if (diff > 180) diff = 360 - diff;
+
+            // If very close, lock in and proceed
+            if (diff < 5) {
+                tuningState.isDragging = false;
+                setTimeout(() => closeTuning(true), 500);
+            }
+        }
+
+        function drawTuningStatic() {
+            if (!tuningState.active) return;
+
+            // Calculate distance to target to determine noise level
+            let diff = Math.abs(tuningState.targetAngle - tuningState.knobAngle);
+            if (diff > 180) diff = 360 - diff;
+
+            // 0 is perfect, 180 is max noise
+            let noiseLevel = diff / 180.0;
+
+            tuningCtx.fillStyle = '#000';
+            tuningCtx.fillRect(0, 0, tuningCanvas.width, tuningCanvas.height);
+
+            tuningCtx.strokeStyle = '#66bb6a';
+            tuningCtx.lineWidth = 2;
+            tuningCtx.beginPath();
+
+            let time = performance.now() / 100;
+
+            for (let x = 0; x < tuningCanvas.width; x += 2) {
+                // Base sine wave
+                let y = Math.sin(x * 0.05 - time) * 20;
+
+                // Add noise based on distance from target
+                if (noiseLevel > 0.05) {
+                    y += (Math.random() - 0.5) * (noiseLevel * 100);
+                }
+
+                if (x === 0) tuningCtx.moveTo(x, tuningCanvas.height/2 + y);
+                else tuningCtx.lineTo(x, tuningCanvas.height/2 + y);
+            }
+            tuningCtx.stroke();
+
+            requestAnimationFrame(drawTuningStatic);
+        }
+
+        // --- PUZZLE LOGIC ---
 
         function openPuzzle(type) {
             gameState = 'PUZZLE';
@@ -840,9 +1099,47 @@
             }
         }
 
+        function enterSecretLab() {
+            gameState = 'SECRET';
+            document.getElementById('secret-lab').classList.remove('hidden');
+        }
+
+        function exitSecretLab() {
+            document.getElementById('secret-lab').classList.add('hidden');
+            gameState = 'PLAYING';
+            // Move player slightly away from door to prevent instant re-entry
+            player.x -= 50;
+        }
+
         function finishEpilogue() {
             document.getElementById('epilogue-screen').classList.add('hidden');
             gameState = 'WIN';
+
+            // Calculate Final Grade
+            let loreCount = Object.values(collectedLore).filter(v => v).length;
+            let grade = 'C';
+            if (loreCount === 4) grade = 'S';
+            else if (loreCount === 3) grade = 'A';
+            else if (loreCount >= 2) grade = 'B';
+
+            let gradeColor = '#ff1744'; // C - Red
+            if (grade === 'S') gradeColor = '#ffeb3b'; // Yellow/Gold
+            if (grade === 'A') gradeColor = '#66bb6a'; // Green
+            if (grade === 'B') gradeColor = '#29b6f6'; // Blue
+
+            let gradeEl = document.getElementById('final-grade');
+            gradeEl.innerText = `Grade: ${grade}`;
+            gradeEl.style.color = gradeColor;
+
+            let msgEl = document.getElementById('grade-message');
+            if (loreCount === 4) {
+                msgEl.innerText = "You have gathered all the parts required to build the Modulator circuit!";
+                msgEl.style.color = '#66bb6a';
+            } else {
+                msgEl.innerText = `You gathered ${loreCount}/4 parts. The Modulator is incomplete.`;
+                msgEl.style.color = '#ffb74d';
+            }
+
             document.getElementById('win-screen').classList.remove('hidden');
         }
 
@@ -919,6 +1216,11 @@
             oscCtx.fillRect(0, 0, oscCanvas.width, oscCanvas.height);
 
             const drawWave = (params, color, isTarget) => {
+                let addNoise = false;
+                if (!isTarget && puzzleState.type === 'AM' && isLightningStriking && !filterActive) {
+                    addNoise = true;
+                }
+
                 oscCtx.strokeStyle = color;
                 oscCtx.lineWidth = isTarget ? 3 : 2;
                 if (isTarget) oscCtx.setLineDash([5, 5]); // Dashed line for target
@@ -942,6 +1244,10 @@
                         y = envelope * Math.cos(params.fc * t + params.beta * Math.sin(params.fm * t));
                     }
 
+                    if (addNoise) {
+                        y += (Math.random() * 20 - 10); // Noise spike amplitude
+                    }
+
                     let plotY = oscCanvas.height / 2 - y;
                     if (x === 0) oscCtx.moveTo(x, plotY);
                     else oscCtx.lineTo(x, plotY);
@@ -961,7 +1267,7 @@
         bgImage.onload = () => { bgLoaded = true; };
 
         const charImage = new Image();
-        charImage.src = 'character.png';
+        charImage.src = 'frisk.png';
         let charLoaded = false;
         charImage.onload = () => { charLoaded = true; };
 
@@ -998,6 +1304,10 @@
         }
 
         function draw(ctx) {
+            if (gameState === 'TUNING') {
+                drawTuningStatic();
+                return; // HTML UI handles the rest
+            }
             if (gameState === 'PUZZLE') {
                 drawPuzzleWaveform();
                 return;
@@ -1013,20 +1323,39 @@
             // Draw Mountain Background Image
             drawMountains(ctx);
 
-            // Draw Snowflakes (Background)
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-            for (let flake of snowflakes) {
-                ctx.beginPath();
-                ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
-                ctx.fill();
+            // Lightning Flash (Draw behind foreground, over background)
+            if (isLightningStriking) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
 
-                // Update snow positions for next frame
+            // Draw Weather Particles (Background)
+            if (weatherType === 'snow') {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            } else if (weatherType === 'rain') {
+                ctx.strokeStyle = 'rgba(150, 200, 255, 0.6)';
+                ctx.lineWidth = 1;
+            }
+
+            for (let p of weatherParticles) {
+                if (weatherType === 'snow') {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (weatherType === 'rain') {
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p.x + p.drift * 2, p.y + p.length);
+                    ctx.stroke();
+                }
+
+                // Update positions
                 if (gameState === 'PLAYING') {
-                    flake.y += flake.speed;
-                    flake.x += flake.drift;
-                    if (flake.y > canvas.height) flake.y = -5;
-                    if (flake.x > canvas.width) flake.x = 0;
-                    if (flake.x < 0) flake.x = canvas.width;
+                    p.y += p.speed;
+                    p.x += p.drift;
+                    if (p.y > canvas.height) p.y = -5;
+                    if (p.x > canvas.width) p.x = 0;
+                    if (p.x < 0) p.x = canvas.width;
                 }
             }
 
@@ -1072,6 +1401,66 @@
                     ctx.fillRect(berry.x + 4, berry.y + 6, 2, 2);
                     ctx.fillRect(berry.x + 10, berry.y + 8, 2, 2);
                     ctx.fillRect(berry.x + 6, berry.y + 12, 2, 2);
+                }
+
+                // Draw Lore Collectibles
+                for (let lore of loreCollectibles) {
+                    if (lore.collected) continue;
+                    if (lore.x + lore.width < camera.x || lore.x > camera.x + camera.width ||
+                        lore.y + lore.height < camera.y || lore.y > camera.y + camera.height) continue;
+
+                    // Floating animation
+                    lore.y = lore.originY + Math.sin(time * 3 + lore.floatOffset) * 5;
+
+                    ctx.fillStyle = lore.color;
+                    ctx.fillRect(lore.x, lore.y, lore.width, lore.height);
+
+                    // Text label
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '10px Courier New';
+                    ctx.fillText(lore.name, lore.x - 10, lore.y - 5);
+                }
+
+                // Draw Power-ups
+                for (let pup of powerups) {
+                    if (pup.collected) continue;
+                    if (pup.x + pup.width < camera.x || pup.x > camera.x + camera.width ||
+                        pup.y + pup.height < camera.y || pup.y > camera.y + camera.height) continue;
+
+                    pup.y = pup.originY + Math.sin(time * 4 + pup.floatOffset) * 6;
+
+                    // Glowing effect
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = pup.color;
+                    ctx.fillStyle = pup.color;
+                    ctx.fillRect(pup.x, pup.y, pup.width, pup.height);
+                    ctx.shadowBlur = 0; // reset
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '10px Courier New';
+                    ctx.fillText("Low Pass Filter", pup.x - 20, pup.y - 5);
+                }
+
+                // Draw Doors
+                for (let door of doors) {
+                    if (door.x + door.width < camera.x || door.x > camera.x + camera.width ||
+                        door.y + door.height < camera.y || door.y > camera.y + camera.height) continue;
+
+                    ctx.fillStyle = '#4e342e'; // Dark wood color
+                    ctx.fillRect(door.x, door.y, door.width, door.height);
+
+                    // Door knob
+                    ctx.fillStyle = '#ffeb3b';
+                    ctx.beginPath();
+                    ctx.arc(door.x + door.width - 10, door.y + door.height / 2, 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Prompt
+                    if (rectIntersect(player, door)) {
+                        ctx.fillStyle = '#fff';
+                        ctx.font = '14px Courier New';
+                        ctx.fillText("Press UP to enter", door.x - 20, door.y - 10);
+                    }
                 }
 
                 // Draw Hazards (Spikes)
@@ -1146,17 +1535,23 @@
                 let drawY = -player.height;
 
                 if (charLoaded) {
-                    // Coordinates: left=250, top=480, right=620, bottom=1100
-                    // width = 370, height = 620
+                    // Frisk Sprite coordinates. The image is 840x859, 4 columns by 4 rows.
+                    // 840 / 4 = 210 wide, 859 / 4 = 214 high per frame.
+                    // We'll use row 0, col 0 for idle.
+                    let srcX = 0;
+                    let srcY = 0;
+                    let srcWidth = 210;
+                    let srcHeight = 214;
 
                     // Flip the character if facing left
                     if (player.facingDirection === -1) {
                         ctx.scale(-1, 1);
                     }
 
-                    let imgDrawWidth = 45;
-                    let imgDrawHeight = 75;
-                    ctx.drawImage(charImage, 250, 480, 370, 620, -imgDrawWidth/2, -imgDrawHeight, imgDrawWidth, imgDrawHeight);
+                    // Frisk image needs to map to player dimensions
+                    let imgDrawWidth = player.width * 1.5;
+                    let imgDrawHeight = player.height * 1.5;
+                    ctx.drawImage(charImage, srcX, srcY, srcWidth, srcHeight, -imgDrawWidth/2, -imgDrawHeight, imgDrawWidth, imgDrawHeight);
                 } else {
                     ctx.fillStyle = player.color;
                     ctx.fillRect(drawX, drawY, player.width, player.height);
@@ -1204,6 +1599,19 @@
                 ctx.fillStyle = 'white';
                 ctx.font = '20px Courier New';
                 ctx.fillText(`x ${totalStrawberriesCollected}`, canvas.width - 70, 35);
+
+                // Draw Filter Timer HUD
+                if (filterActive) {
+                    ctx.fillStyle = '#29b6f6';
+                    ctx.font = '20px Courier New';
+                    ctx.fillText(`Filter Active: ${filterTimer.toFixed(1)}s`, canvas.width / 2 - 100, 30);
+                }
+
+                // Draw Lore Count HUD
+                let loreCount = Object.values(collectedLore).filter(v => v).length;
+                ctx.fillStyle = '#ffeb3b';
+                ctx.font = '16px Courier New';
+                ctx.fillText(`Parts: ${loreCount}/4`, canvas.width - 100, 60);
             }
         }
 
