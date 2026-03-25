@@ -3,137 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celeste: Frequency & Amplitude Modulation</title>
+    <title>FREQUENCY: Armstrong's Rebellion</title>
     <style>
+        /* 1930s Blueprint / Noir Style */
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #0b0c10;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Courier New', Courier, monospace; /* Pixel-art style font */
-            color: #c5c6c7;
-            overflow: hidden; /* Prevent scrolling */
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background-color: #0d0a08; /* Very dark brownish black */
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Courier New', Courier, monospace; /* Typewriter feel */
+            color: #d4c4b7; /* Aged paper / cream */
+            overflow: hidden;
         }
 
         #game-container {
-            position: relative;
-            /* Container will scale via CSS while maintaining 16:9 ratio */
-            width: 100%;
-            max-width: 1920px;
-            aspect-ratio: 16 / 9;
-            background-color: #1f2833;
-            border: 4px solid #45a29e;
-            box-shadow: 0 0 20px #66fcf1;
-            image-rendering: pixelated; /* Essential for pixel art */
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: relative; width: 800px; height: 600px;
+            background-color: #1a1412;
+            border: 4px solid #4a3b32; /* Dark wood/mahogany */
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            image-rendering: pixelated;
         }
 
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+        canvas { display: block; width: 100%; height: 100%; }
 
         /* UI Overlays */
         .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(11, 12, 16, 0.85);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(13, 10, 8, 0.9);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 10;
         }
 
-        h1, h2 {
-            color: #66fcf1;
-            text-shadow: 2px 2px 0px #45a29e;
-            text-align: center;
+        /* Blueprint Menu Style */
+        #start-menu {
+            background-color: #1c3144; /* Blueprint blue */
+            background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #f0f0f0;
+            border: 8px solid #0f1c26;
+            box-sizing: border-box;
         }
 
-        p {
-            max-width: 600px;
+        h1 {
+            color: #00ffff; /* Pure cyan/blue for FM power */
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.5), 0 0 10px #00ffff;
             text-align: center;
-            line-height: 1.5;
-            margin-bottom: 20px;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
+
+        #start-menu h1 { color: #fff; text-shadow: none; border-bottom: 2px solid #fff; padding-bottom: 10px; }
+
+        h2 { color: #d4c4b7; text-align: center; }
+
+        p { max-width: 600px; text-align: center; line-height: 1.5; margin-bottom: 20px; font-weight: bold;}
+
+        #start-menu p { color: #e0e0e0; font-family: sans-serif; }
 
         button {
-            padding: 10px 20px;
-            font-size: 1.2rem;
-            font-family: inherit;
-            color: #0b0c10;
-            background-color: #66fcf1;
-            border: 2px solid #45a29e;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin: 10px;
+            padding: 10px 20px; font-size: 1.2rem; font-family: inherit; font-weight: bold;
+            color: #0d0a08; background-color: #b5a642; /* Aged brass */
+            border: 2px solid #8b7d3b; cursor: pointer; transition: all 0.2s; margin: 10px;
+            box-shadow: 2px 2px 0px #000;
         }
 
-        button:hover {
-            background-color: #45a29e;
-            color: #fff;
-            box-shadow: 0 0 10px #66fcf1;
+        button:hover { background-color: #d4c4b7; color: #000; }
+
+        .hidden { display: none !important; }
+
+        /* Brass & Wood UI panels for puzzles */
+        .brass-panel {
+            background: #3e2723; /* Dark wood */
+            padding: 20px; border-radius: 5px;
+            border: 6px solid #b5a642; /* Brass border */
+            display: flex; flex-direction: column; align-items: center; position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.6);
         }
 
-        .character-select {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
+        .screen-container {
+            width: 300px; height: 100px; background-color: #000; overflow: hidden; position: relative;
+            border: 4px solid #2e2e2e; border-radius: 5px; margin-bottom: 20px;
+            box-shadow: inset 0 0 10px #000;
         }
 
-        .char-option {
-            width: 64px;
-            height: 64px;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: border-color 0.2s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .osc-screen-container {
+            background: #000; padding: 10px; border-radius: 5px; border: 4px solid #2e2e2e; position: relative;
+            box-shadow: inset 0 0 10px #000;
         }
 
-        .char-option:hover, .char-option.selected {
-            border-color: #66fcf1;
+        .brass-knob-container {
+            position: relative; width: 150px; height: 150px; border-radius: 50%;
+            background: #4e342e; border: 6px solid #b5a642; display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
         }
 
-        /* Hidden by default */
-        .hidden {
-            display: none !important;
+        .brass-knob {
+            width: 100px; height: 100px; border-radius: 50%; background: #212121;
+            border: 4px solid #424242; position: relative; cursor: grab; transform: rotate(0deg);
+            box-shadow: inset 0 -5px 10px rgba(0,0,0,0.5);
         }
 
-        /* Highlight for Real Tesca Image Highlights */
-        .highlighted-area {
-            position: absolute;
-            border: 4px solid #66fcf1;
-            box-shadow: 0 0 20px #66fcf1, inset 0 0 20px #66fcf1;
-            background-color: rgba(102, 252, 241, 0.2);
-            border-radius: 5px;
-            animation: pulse-glow 1s infinite alternate;
-            display: none; /* hidden by default */
+        .knob-indicator {
+            width: 8px; height: 25px; background: #b5a642; position: absolute; top: 5px; left: 46px; border-radius: 2px;
         }
 
-        @keyframes pulse-glow {
-            from { opacity: 0.6; }
-            to { opacity: 1; }
-        }
-
-        /* Audio Element */
-        #bgm {
-            display: none;
-        }
+        #puzzle-controls label { display: block; margin-top: 10px; color: #d4c4b7; font-weight: bold;}
+        #puzzle-controls input[type=range] { width: 100%; accent-color: #b5a642; }
 
     </style>
 </head>
@@ -141,881 +117,693 @@
 
     <div id="game-container">
         <!-- Game Canvas -->
-        <canvas id="gameCanvas" width="1920" height="1080"></canvas>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
 
         <!-- Start Menu Overlay -->
         <div id="start-menu" class="overlay">
-            <h1>CELESTE:<br>Modulation Journey</h1>
-            <p>Welcome to the mountain. Your goal is to reach the summit, but to do so, you must master the art of wave modulation.</p>
-            <p>Learn Amplitude Modulation (AM) and Frequency Modulation (FM) using the legendary Tesca 40501 trainer kit to unlock the path forward.</p>
+            <h1>FREQUENCY:<br>Armstrong's Rebellion</h1>
+            <p>CONFIDENTIAL DOCUMENT // 1934</p>
+            <p>Subject: Edwin Armstrong.</p>
+            <p>Sarnoff's corporate monopoly seeks to drown the world in AM static noise. Your objective: climb the RCA skyscraper, master wave modulation, and broadcast the clean FM truth.</p>
 
-            <h2>Select Your Climber</h2>
-            <div class="character-select">
-                <div class="char-option selected" id="char-red" style="background-color: #e53935;" onclick="selectCharacter('red')"></div>
-                <div class="char-option" id="char-purple" style="background-color: #8e24aa;" onclick="selectCharacter('purple')"></div>
-                <div class="char-option" id="char-blue" style="background-color: #1e88e5;" onclick="selectCharacter('blue')"></div>
-            </div>
-
-            <button onclick="startGame()">Start Climb</button>
-            <p style="font-size: 0.8rem; margin-top: 20px; color: #888;">Controls: A/D or Left/Right Arrow to move. Spacebar to jump. Shift to dash. 'E' to interact with the Tesca 40501.</p>
-        </div>
-
-        <!-- Tesca 40501 Puzzle UI Overlay -->
-        <!-- Radio Tuning Minigame Overlay -->
-        <div id="tuning-menu" class="overlay hidden">
-            <h1>Radio Tuning</h1>
-            <p>Find the resonance frequency to clear the static and lock onto the signal.</p>
-
-            <div style="background: #2c3e50; padding: 20px; border-radius: 10px; border: 4px solid #cfd8dc; display: flex; flex-direction: column; align-items: center; position: relative;">
-
-                <!-- Static Display -->
-                <div id="tuning-static" style="width: 300px; height: 100px; background-color: #000; overflow: hidden; position: relative; border: 2px solid #81c784; border-radius: 5px; margin-bottom: 20px;">
-                    <canvas id="tuningCanvas" width="300" height="100"></canvas>
-                </div>
-
-                <!-- Tuning Dial -->
-                <div style="position: relative; width: 150px; height: 150px; border-radius: 50%; background: #455a64; border: 4px solid #90a4ae; display: flex; justify-content: center; align-items: center;">
-                    <div id="tuning-knob" style="width: 100px; height: 100px; border-radius: 50%; background: #eceff1; border: 2px solid #cfd8dc; position: relative; cursor: grab; transform: rotate(0deg); box-shadow: inset 0 -5px 10px rgba(0,0,0,0.2);">
-                        <div style="width: 10px; height: 30px; background: #ef5350; position: absolute; top: 5px; left: 45px; border-radius: 2px;"></div>
-                    </div>
-                </div>
-                <p style="margin-top: 15px; font-size: 0.9rem;">Drag the knob to tune</p>
-                <button onclick="closeTuning(false)" style="background-color: #e53935; border-color: #c62828;">Abort</button>
-            </div>
+            <button onclick="startGame()" id="startBtn">Initiate Sequence</button>
+            <p style="font-size: 0.8rem; margin-top: 20px; color: #aaa;">Controls: A/D or Left/Right Arrow to move. Spacebar to jump. Shift to dash. 'E' to interact with the Tesca 40501.</p>
         </div>
 
         <!-- Tesca 40501 Puzzle UI Overlay -->
         <div id="puzzle-menu" class="overlay hidden">
-            <h1 id="puzzle-title">Tesca 40501: Amplitude Modulation</h1>
+            <h1 id="puzzle-title" style="color: #b5a642; text-shadow: 2px 2px #000;">Tesca 40501</h1>
             <p id="puzzle-desc">Match the target wave by adjusting the sliders.</p>
 
-            <div style="display: flex; gap: 20px; align-items: flex-start; background: #2c3e50; padding: 20px; border-radius: 10px; border: 4px solid #cfd8dc;">
+            <div class="brass-panel" style="flex-direction: row; gap: 20px; align-items: flex-start;">
                 <!-- Oscilloscope Screen -->
-                <div style="background: #000; padding: 10px; border-radius: 5px; border: 2px solid #81c784; position: relative;">
-                    <span style="position: absolute; top: 10px; right: 10px; color: #ef5350; font-size: 12px;">-- Target</span>
-                    <span style="position: absolute; top: 25px; right: 10px; color: #66bb6a; font-size: 12px;">— Output</span>
+                <div class="osc-screen-container">
+                    <span style="position: absolute; top: 10px; right: 10px; color: #8b7d3b; font-size: 12px;">-- Target</span>
+                    <span style="position: absolute; top: 25px; right: 10px; color: #00ffff; font-size: 12px;">— Output</span>
                     <canvas id="oscCanvas" width="400" height="250"></canvas>
                 </div>
 
                 <!-- Controls -->
-                <div id="puzzle-controls" style="display: flex; flex-direction: column; gap: 15px; width: 250px;">
-                    <!-- Sliders will be injected here via JS -->
+                <div id="puzzle-controls" style="display: flex; flex-direction: column; gap: 5px; width: 250px;">
+                    <!-- Sliders injected here -->
                 </div>
             </div>
 
             <div style="margin-top: 20px;">
                 <button onclick="checkPuzzle()">Verify Signal</button>
-                <button onclick="closePuzzle(false)" style="background-color: #e53935; border-color: #c62828;">Abort</button>
+                <button onclick="closePuzzle(false)" style="background-color: #5c2018; border-color: #3b1410; color: #d4c4b7;">Abort</button>
             </div>
-            <p id="puzzle-feedback" style="color: #ffb74d; height: 20px; font-weight: bold;"></p>
-        </div>
-
-        <!-- Epilogue Screen Overlay (Real Tesca 40501) -->
-        <div id="epilogue-screen" class="overlay hidden">
-            <!-- Wisdom NPC -->
-            <div id="wisdom-npc" style="position: absolute; top: 20px; right: 40px; text-align: center; z-index: 20;">
-                <div style="font-size: 60px; text-shadow: 0 0 20px #66fcf1; animation: float 3s ease-in-out infinite;">🦉</div>
-                <div style="color: #66fcf1; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 5px;">Spirit of the Summit</div>
-            </div>
-
-            <!-- Dialogue Box -->
-            <div id="dialogue-box" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 80%; background: #2c3e50; border: 4px solid #66fcf1; border-radius: 10px; padding: 20px; z-index: 30; cursor: pointer; display: flex; align-items: center; justify-content: space-between;" onclick="nextDialogue()">
-                <p id="dialogue-text" style="text-align: left; margin: 0; font-size: 1.1rem; color: #fff;">(Dialogue loads here...)</p>
-                <div style="color: #66fcf1; font-size: 20px; animation: blink 1s infinite;">▶</div>
-            </div>
-
-            <!-- The Real Tesca 40501 Photo Background -->
-            <div id="tesca-real-board" style="width: 700px; height: 400px; background-image: url('circuit.png'); background-size: cover; background-repeat: no-repeat; background-position: center; border: 4px solid #bdbdbd; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative;">
-
-                <!-- Highlight Overlay Areas (Mapped roughly to the provided circuit image) -->
-
-                <div class="highlighted-area" id="area-audio-in" style="top: 40%; left: 32%; width: 10%; height: 8%;"></div> <!-- AUDIO IN -->
-                <div class="highlighted-area" id="area-carrier-in" style="top: 22%; left: 32%; width: 10%; height: 8%;"></div> <!-- CARRIER IN -->
-                <div class="highlighted-area" id="area-carrier-signal" style="top: 22%; left: 18%; width: 10%; height: 8%;"></div> <!-- CARRIER SIGNAL -->
-                <div class="highlighted-area" id="area-modulator" style="top: 30%; left: 68%; width: 15%; height: 35%;"></div> <!-- Transistor area T1 T2 -->
-                <div class="highlighted-area" id="area-output" style="top: 20%; left: 81%; width: 12%; height: 10%;"></div> <!-- MODULATED OUTPUT -->
-                <div class="highlighted-area" id="area-demodulator" style="top: 55%; left: 18%; width: 40%; height: 30%;"></div> <!-- DEMODULATOR -->
-
-            </div>
+            <p id="puzzle-feedback" style="color: #b5a642; height: 20px; font-weight: bold;"></p>
         </div>
 
         <!-- Win Screen Overlay -->
         <div id="win-screen" class="overlay hidden">
-            <h1 style="color: #66bb6a;">SUMMIT REACHED!</h1>
-            <p>You have mastered Amplitude and Frequency Modulation using the Tesca 40501.</p>
-            <h2 id="final-grade" style="color: #ffeb3b; font-size: 3rem; margin: 10px 0;">Grade: ?</h2>
+            <h1 style="color: #00ffff;">TRANSMISSION SUCCESSFUL</h1>
+            <p>You have mastered Modulation and broadcasted the truth to the world.</p>
+            <h2 id="final-grade" style="color: #b5a642; font-size: 3rem; margin: 10px 0;">Grade: ?</h2>
             <p id="grade-message" style="font-size: 1.2rem; margin-bottom: 20px;">...</p>
-            <button onclick="location.reload()">Climb Again</button>
-        </div>
-
-        <!-- Secret Lab Overlay -->
-        <div id="secret-lab" class="overlay hidden" style="background-color: #0b0c10;">
-            <h1 style="color: #66fcf1; font-family: 'Courier New', monospace;">Armstrong's Secret Lab</h1>
-            <div style="border: 4px solid #66fcf1; padding: 10px; background: #000; margin-bottom: 20px;">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJm4dNwPP6T0iA6X4qGzhCPsaJmf1ATm5Dpw&s" alt="Edwin Armstrong" style="max-width: 400px; display: block;">
-            </div>
-            <p style="font-size: 1.2rem; color: #fff;">"Thank you for saving my invention from oblivion."</p>
-            <button onclick="exitSecretLab()" style="background-color: #e53935; border-color: #c62828;">Return to Mountain</button>
+            <button onclick="location.reload()">Reboot System</button>
         </div>
 
     </div>
 
-    <!-- Audio Player (Requires spectre.mp3 in the same directory) -->
-    <audio id="bgm" src="spectre.mp3" loop></audio>
+    <!-- Audio Player Placeholder -->
+    <audio id="bgm" loop></audio>
 
     <script>
+
         // --- GAME LOGIC & STATE ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let animationFrameId;
 
-        // Tuning Minigame State
-        let tuningState = {
-            active: false,
-            knobAngle: 0,
-            targetAngle: 0,
-            isDragging: false,
-            pendingPuzzleType: ''
-        };
-        const tuningCanvas = document.getElementById('tuningCanvas');
-        const tuningCtx = tuningCanvas.getContext('2d');
-        const tuningKnob = document.getElementById('tuning-knob');
-
         // Colors
-        let selectedCharacterColor = '#e53935'; // Default Red
-        const GAME_BG = '#1f2833';
-        const PLATFORM_COLOR = '#c5c6c7';
+        const COLORS = {
+            bgDark: '#0d0a08',
+            mahogany: '#3e2723',
+            brass: '#b5a642',
+            fmBlue: '#00ffff',
+            staticGreen: '#9acd32',
+            staticYellow: '#ffeb3b',
+            trenchCoat: '#5d4037',
+            skin: '#ffccbc',
+            wrench: '#00ffff',
+            lawyerSuit: '#212121',
+            radioBot: '#8d6e63',
+            redStatic: '#d32f2f'
+        };
 
-        let gameState = 'MENU'; // MENU, PLAYING, PUZZLE, TUNING, SECRET
+        let gameState = 'MENU'; // MENU, PLAYING, PUZZLE, TUNING, WIN
         let currentStage = 1;
 
         // Input State
         const keys = {
-            ArrowLeft: false,
-            ArrowRight: false,
-            ArrowUp: false,
-            ArrowDown: false,
-            a: false,
-            d: false,
-            w: false,
-            s: false,
-            e: false,
-            ' ': false,
-            Shift: false
+            ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false,
+            a: false, d: false, w: false, s: false, e: false, ' ': false, Shift: false
         };
 
-        // Player State
-        const player = {
-            x: 50,
-            y: 500,
-            width: 50,
-            height: 70,
-            vx: 0,
-            vy: 0,
-            maxSpeed: 6,
-            accel: 0.8,
-            friction: 0.85, // Air and ground friction
-            jumpPower: 15,
-            gravity: 0.8,
-            grounded: false,
-            color: '#e53935',
-            spawnX: 50,
-            spawnY: 500,
-            scaleX: 1.0,
-            scaleY: 1.0,
-            facingDirection: 1, // 1 for right, -1 for left
+        // Camera Shake
+        let cameraShake = 0;
 
-            // Dash properties
-            canDash: true,
-            isDashing: false,
-            dashTimer: 0,
-            dashDuration: 10, // Frames at 60fps
-            dashSpeed: 18,
-            dashDirX: 0,
-            dashDirY: 0
+        // Player State (Armstrong)
+        const player = {
+            x: 50, y: 500, width: 30, height: 46,
+            vx: 0, vy: 0, maxSpeed: 6, accel: 0.8, friction: 0.85,
+            jumpPower: 16, gravity: 0.9, grounded: false, // Heavier jump
+            spawnX: 50, spawnY: 500,
+            scaleX: 1.0, scaleY: 1.0, facingDirection: 1,
+
+            canDash: true, isDashing: false, dashTimer: 0, dashDuration: 10, dashSpeed: 20,
+            dashDirX: 0, dashDirY: 0,
+
+            // Trail for FM dash
+            trail: []
         };
 
         // Camera Object
-        const camera = {
-            x: 0,
-            y: 0,
-            width: 1920,
-            height: 1080,
-            targetX: 0,
-            targetY: 0,
-            lerp: 0.1 // Smoothness of camera follow
-        };
+        const camera = { x: 0, y: 0, width: 800, height: 600, targetX: 0, targetY: 0, lerp: 0.1 };
 
-        // Level Design & Obstacles
+        // Game Entities
         let platforms = [];
-        let hazards = []; // Spikes
-        let interactables = []; // Tesca 40501 machines
-        let strawberries = []; // Collectibles
-        let doors = []; // Entrances to secret areas
-        let levelWidth = 1920;
-        let levelHeight = 1080;
+        let hazards = []; // Static Lightning
+        let interactables = []; // Tesca 40501
+        let vacuumTubes = []; // Collectibles
+        let powerups = []; // FM Shield
+        let enemies = []; // Lawyers & Bots
+        let projectiles = []; // Documents & Red Static
 
-        // Lore Collectibles & Power-ups
-        let loreCollectibles = [];
-        let collectedLore = {
-            '10K Resistor': false,
-            'Capacitor': false,
-            'OA79 Diode': false,
-            'BF-195 Transistor': false
-        };
-        let powerups = [];
-        let filterActive = false;
-        let filterTimer = 0; // Remaining seconds
+        let levelWidth = 800; let levelHeight = 600;
 
-        // Progression
-        let totalStrawberriesCollected = 0;
+        let fmShieldActive = false;
+        let fmShieldTimer = 0;
+        let totalTubesCollected = 0;
 
-        // Weather systems
-        let weatherType = 'snow'; // 'snow', 'rain'
-        let lightningFlashTimer = 0; // Frames remaining for lightning flash
+        // Visuals & Weather
+        let lightningFlashTimer = 0;
         let isLightningStriking = false;
 
-        let weatherParticles = [];
-        function initWeather(type) {
-            weatherType = type;
-            weatherParticles = [];
-            let count = type === 'rain' ? 200 : 100;
-            for(let i=0; i<count; i++) {
-                weatherParticles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    radius: type === 'rain' ? 1 : (Math.random() * 2 + 1),
-                    length: type === 'rain' ? (Math.random() * 10 + 10) : 0,
-                    speed: type === 'rain' ? (Math.random() * 5 + 10) : (Math.random() * 2 + 1),
-                    drift: type === 'rain' ? 1 : (Math.random() * 2 - 1)
-                });
+        // Procedural Backgrounds
+        let bgCanvas = document.createElement('canvas');
+        bgCanvas.width = 1600; bgCanvas.height = 800;
+        let bgCtx = bgCanvas.getContext('2d');
+
+        function generateBackground(stage) {
+            bgCtx.fillStyle = COLORS.bgDark;
+            bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+            if (stage === 1) {
+                // 1930s Inventor's Laboratory (Dark, cluttered)
+                bgCtx.fillStyle = '#1a120e'; // slightly lighter walls
+                for(let i=0; i<bgCanvas.width; i+=100) {
+                    bgCtx.fillRect(i, 0, 5, bgCanvas.height); // wooden pillars
+                }
+                // Shelves
+                bgCtx.fillStyle = COLORS.mahogany;
+                for(let i=0; i<bgCanvas.width; i+=200) {
+                    bgCtx.fillRect(i+20, 200, 150, 10);
+                    bgCtx.fillRect(i+20, 400, 150, 10);
+                    // Clutter on shelves
+                    bgCtx.fillStyle = '#424242';
+                    bgCtx.fillRect(i+40, 160, 30, 40);
+                    bgCtx.fillStyle = '#5c4033';
+                    bgCtx.fillRect(i+80, 170, 50, 30);
+                    bgCtx.fillStyle = '#212121';
+                    bgCtx.fillRect(i+30, 350, 40, 50);
+                    bgCtx.fillStyle = COLORS.mahogany; // reset
+                }
+                // Ambient glow
+                let grad = bgCtx.createRadialGradient(bgCanvas.width/2, bgCanvas.height, 0, bgCanvas.width/2, bgCanvas.height, 600);
+                grad.addColorStop(0, 'rgba(181, 166, 66, 0.1)'); // brass glow
+                grad.addColorStop(1, 'transparent');
+                bgCtx.fillStyle = grad;
+                bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+            } else {
+                // Stage 2/3: Skyscraper exterior
+                bgCtx.fillStyle = '#0a0d14'; // Dark night sky
+                bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+                // Giant Art Deco buildings
+                bgCtx.fillStyle = '#12161a';
+                bgCtx.fillRect(100, 100, 300, bgCanvas.height);
+                bgCtx.fillRect(600, 200, 400, bgCanvas.height);
+                bgCtx.fillRect(1200, 50, 250, bgCanvas.height);
+
+                // Art deco lines and windows
+                bgCtx.fillStyle = '#1e242b';
+                bgCtx.fillRect(120, 100, 260, bgCanvas.height);
+                bgCtx.fillRect(620, 200, 360, bgCanvas.height);
+
+                bgCtx.fillStyle = '#b5a642'; // Dim lit windows
+                for(let i=150; i<350; i+=40) {
+                    for(let j=150; j<bgCanvas.height; j+=60) {
+                        if(Math.random() > 0.6) bgCtx.fillRect(i, j, 15, 25);
+                    }
+                }
+                for(let i=650; i<950; i+=40) {
+                    for(let j=250; j<bgCanvas.height; j+=60) {
+                        if(Math.random() > 0.5) bgCtx.fillRect(i, j, 15, 25);
+                    }
+                }
             }
         }
-        initWeather('snow');
+
 
         function loadStage(stageNum) {
-            platforms = [];
-            hazards = [];
-            interactables = [];
-            strawberries = [];
-            loreCollectibles = [];
-            powerups = [];
-            doors = [];
+            platforms = []; hazards = []; interactables = []; vacuumTubes = [];
+            powerups = []; enemies = []; projectiles = []; player.trail = [];
+
+            generateBackground(stageNum);
 
             if (stageNum === 1) {
-                // Stage 1: Intro to AM - Max jump height is roughly ~150 pixels with player's jump power (15) and gravity (0.8).
-                // Max horizontal dash is fast but jump distance is standard.
-                // We keep the level wide but compress the vertical increments.
-                initWeather('rain');
-                levelWidth = 3840; // Double 1920 width
-                levelHeight = 1080;
+                // Stage 1: The Lab (Intro to AM)
+                levelWidth = 1600; levelHeight = 600;
 
-                platforms.push({ x: 0, y: levelHeight - 40, width: levelWidth, height: 40, type: 'floor' });
+                platforms.push({ x: 0, y: levelHeight - 40, width: levelWidth, height: 40 }); // Floor
 
-                player.spawnX = 100; player.spawnY = levelHeight - 150;
+                player.spawnX = 50; player.spawnY = levelHeight - 100;
 
-                // Section 1: Stairs. Max Y jump is ~140, so gaps will be 100-120 pixels high max.
-                platforms.push({ x: 400, y: levelHeight - 140, width: 400, height: 40 });
-                platforms.push({ x: 900, y: levelHeight - 240, width: 400, height: 40 });
-                platforms.push({ x: 1400, y: levelHeight - 340, width: 1200, height: 40 }); // Long platform
-                platforms.push({ x: 2700, y: levelHeight - 440, width: 1000, height: 40 });
+                platforms.push({ x: 300, y: 450, width: 200, height: 20 });
+                platforms.push({ x: 600, y: 350, width: 200, height: 20 });
+                platforms.push({ x: 900, y: 250, width: 600, height: 20 });
 
-                // Strawberries
-                strawberries.push({ x: 1100, y: levelHeight - 300, width: 24, height: 24, collected: false, originY: levelHeight - 300, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 1800, y: levelHeight - 400, width: 24, height: 24, collected: false, originY: levelHeight - 400, floatOffset: Math.random() * Math.PI });
+                // Vacuum Tubes (Collectibles)
+                vacuumTubes.push({ x: 400, y: 400, width: 12, height: 24, collected: false, originY: 400, floatOffset: Math.random() });
+                vacuumTubes.push({ x: 700, y: 300, width: 12, height: 24, collected: false, originY: 300, floatOffset: Math.random() });
 
-                // Lore Collectibles
-                loreCollectibles.push({ name: '10K Resistor', color: '#ffeb3b', x: 1600, y: levelHeight - 400, width: 30, height: 30, collected: collectedLore['10K Resistor'], originY: levelHeight - 400, floatOffset: Math.random() * Math.PI });
+                // FM Shield Powerup
+                powerups.push({ type: 'FM Shield', x: 1000, y: 200, width: 24, height: 24, collected: false, originY: 200, floatOffset: 0 });
 
-                // Power-up
-                powerups.push({ type: 'Low Pass Filter', color: '#29b6f6', x: 2300, y: levelHeight - 400, width: 36, height: 36, collected: false, originY: levelHeight - 400, floatOffset: Math.random() * Math.PI });
+                // AM Radio Bot Enemy
+                enemies.push({ type: 'bot', x: 1200, y: 210, width: 40, height: 40, timer: 0 });
 
-                // Spikes: NONE. Just floor.
-
-                // Tesca Machine for AM
-                interactables.push({
-                    x: 3400, y: levelHeight - 540, width: 100, height: 100,
-                    type: 'tesca', puzzleType: 'AM', active: true
-                });
+                // Tesca Machine
+                interactables.push({ x: 1400, y: 190, width: 60, height: 60, type: 'tesca', puzzleType: 'AM', active: true });
 
             } else if (stageNum === 2) {
-                // Stage 2: Intro to FM
-                initWeather('snow');
-                levelWidth = 5760; // 3 screens wide
-                levelHeight = 2160; // 2 screens tall
+                // Stage 2: Skyscraper Exterior (Intro to FM)
+                levelWidth = 2400; levelHeight = 800;
 
-                platforms.push({ x: 0, y: levelHeight - 40, width: levelWidth, height: 40, type: 'floor' });
+                platforms.push({ x: 0, y: levelHeight - 40, width: levelWidth, height: 40 });
 
-                player.spawnX = 100; player.spawnY = levelHeight - 150;
+                player.spawnX = 50; player.spawnY = levelHeight - 100;
 
-                // Ascending path (Gap max ~120px up)
-                platforms.push({ x: 400, y: levelHeight - 140, width: 400, height: 40 });
-                platforms.push({ x: 1000, y: levelHeight - 240, width: 400, height: 40 });
-                platforms.push({ x: 1600, y: levelHeight - 340, width: 400, height: 40 });
+                platforms.push({ x: 200, y: levelHeight - 150, width: 200, height: 20 });
+                platforms.push({ x: 500, y: levelHeight - 250, width: 200, height: 20 });
 
-                // Long safe bridge higher up
-                platforms.push({ x: 2200, y: levelHeight - 440, width: 1000, height: 40 });
+                // Static Hazards (Pits)
+                hazards.push({ x: 300, y: levelHeight - 40, width: 400, height: 40 });
 
-                // Easy stepping stones
-                platforms.push({ x: 3400, y: levelHeight - 540, width: 300, height: 40 });
-                platforms.push({ x: 3900, y: levelHeight - 640, width: 300, height: 40 });
+                platforms.push({ x: 800, y: levelHeight - 350, width: 400, height: 20 });
 
-                // Final stretch
-                platforms.push({ x: 4400, y: levelHeight - 740, width: 800, height: 40 });
+                // Corporate Lawyer Enemy
+                enemies.push({ type: 'lawyer', x: 900, y: levelHeight - 410, width: 30, height: 60, vx: 2, startX: 800, endX: 1150, timer: 0 });
 
-                // Strawberries
-                strawberries.push({ x: 1200, y: levelHeight - 300, width: 24, height: 24, collected: false, originY: levelHeight - 300, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 2700, y: levelHeight - 500, width: 24, height: 24, collected: false, originY: levelHeight - 500, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 4050, y: levelHeight - 700, width: 24, height: 24, collected: false, originY: levelHeight - 700, floatOffset: Math.random() * Math.PI });
+                vacuumTubes.push({ x: 600, y: levelHeight - 300, width: 12, height: 24, collected: false, originY: levelHeight - 300, floatOffset: 0 });
+                vacuumTubes.push({ x: 1000, y: levelHeight - 400, width: 12, height: 24, collected: false, originY: levelHeight - 400, floatOffset: 0 });
 
-                // Lore Collectibles
-                loreCollectibles.push({ name: 'Capacitor', color: '#ab47bc', x: 1800, y: levelHeight - 400, width: 30, height: 30, collected: collectedLore['Capacitor'], originY: levelHeight - 400, floatOffset: Math.random() * Math.PI });
-                loreCollectibles.push({ name: 'OA79 Diode', color: '#ff7043', x: 3550, y: levelHeight - 600, width: 30, height: 30, collected: collectedLore['OA79 Diode'], originY: levelHeight - 600, floatOffset: Math.random() * Math.PI });
+                // Safe path continues
+                platforms.push({ x: 1300, y: levelHeight - 450, width: 200, height: 20 });
+                platforms.push({ x: 1600, y: levelHeight - 550, width: 600, height: 20 });
 
-                // Hazards: NONE. Completely safe ground.
-
-                // Tesca Machine for FM
-                interactables.push({
-                    x: 4800, y: levelHeight - 840, width: 100, height: 100,
-                    type: 'tesca', puzzleType: 'FM', active: true
-                });
-
-                // Secret Lab Door (accessible from floor below final stretch)
-                platforms.push({ x: 4500, y: levelHeight - 540, width: 200, height: 40 });
-                doors.push({ x: 4580, y: levelHeight - 640, width: 60, height: 100, type: 'secret_lab' });
+                interactables.push({ x: 2000, y: levelHeight - 610, width: 60, height: 60, type: 'tesca', puzzleType: 'FM', active: true });
 
             } else if (stageNum === 3) {
-                // Stage 3: AM + FM Combined
-                initWeather('snow');
-                levelWidth = 7680; // 4 screens wide
-                levelHeight = 3240; // 3 screens tall
+                // Stage 3: Combined
+                levelWidth = 3000; levelHeight = 1000;
 
-                platforms.push({ x: 0, y: levelHeight - 40, width: levelWidth, height: 40, type: 'floor' });
+                platforms.push({ x: 0, y: levelHeight - 40, width: 500, height: 40 });
+                player.spawnX = 50; player.spawnY = levelHeight - 100;
 
-                player.spawnX = 100; player.spawnY = levelHeight - 150;
+                hazards.push({ x: 500, y: levelHeight - 40, width: 2500, height: 40 }); // Massive static pit
 
-                // Spikes: NONE.
+                platforms.push({ x: 400, y: levelHeight - 200, width: 150, height: 20 });
+                platforms.push({ x: 700, y: levelHeight - 350, width: 200, height: 20 });
 
-                // Simplified platforming
-                platforms.push({ x: 500, y: levelHeight - 140, width: 500, height: 40 });
-                platforms.push({ x: 1200, y: levelHeight - 240, width: 500, height: 40 });
-                platforms.push({ x: 1900, y: levelHeight - 340, width: 500, height: 40 });
-                platforms.push({ x: 2600, y: levelHeight - 440, width: 800, height: 40 });
+                powerups.push({ type: 'FM Shield', x: 750, y: levelHeight - 400, width: 24, height: 24, collected: false, originY: levelHeight - 400, floatOffset: 0 });
 
-                // Simple flat bridge crossing
-                platforms.push({ x: 3600, y: levelHeight - 540, width: 1200, height: 40 });
+                // Lawyers & Bots on bridge
+                platforms.push({ x: 1000, y: levelHeight - 500, width: 800, height: 20 });
+                enemies.push({ type: 'bot', x: 1100, y: levelHeight - 540, width: 40, height: 40, timer: 0 });
+                enemies.push({ type: 'lawyer', x: 1500, y: levelHeight - 560, width: 30, height: 60, vx: -2, startX: 1300, endX: 1700, timer: 0 });
 
-                // Gentle final ascent
-                platforms.push({ x: 5000, y: levelHeight - 640, width: 500, height: 40 });
-                platforms.push({ x: 5700, y: levelHeight - 740, width: 1000, height: 40 });
+                platforms.push({ x: 1900, y: levelHeight - 650, width: 200, height: 20 });
+                platforms.push({ x: 2300, y: levelHeight - 750, width: 600, height: 20 });
 
-                // Strawberries
-                strawberries.push({ x: 1450, y: levelHeight - 300, width: 24, height: 24, collected: false, originY: levelHeight - 300, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 3000, y: levelHeight - 500, width: 24, height: 24, collected: false, originY: levelHeight - 500, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 4200, y: levelHeight - 600, width: 24, height: 24, collected: false, originY: levelHeight - 600, floatOffset: Math.random() * Math.PI });
-                strawberries.push({ x: 5250, y: levelHeight - 700, width: 24, height: 24, collected: false, originY: levelHeight - 700, floatOffset: Math.random() * Math.PI });
-
-                // Lore Collectibles
-                loreCollectibles.push({ name: 'BF-195 Transistor', color: '#8d6e63', x: 4800, y: levelHeight - 600, width: 30, height: 30, collected: collectedLore['BF-195 Transistor'], originY: levelHeight - 600, floatOffset: Math.random() * Math.PI });
-
-                // Tesca Machine for Combined
-                interactables.push({
-                    x: 6200, y: levelHeight - 840, width: 100, height: 100,
-                    type: 'tesca', puzzleType: 'COMBINED', active: true
-                });
+                interactables.push({ x: 2700, y: levelHeight - 810, width: 60, height: 60, type: 'tesca', puzzleType: 'COMBINED', active: true });
             }
 
-            // Reset camera instantly to player
             camera.x = player.spawnX - camera.width / 2;
             camera.y = player.spawnY - camera.height / 2;
-
-            // Reset player to spawn
             resetPlayer();
         }
 
         function resetPlayer() {
-            player.x = player.spawnX;
-            player.y = player.spawnY;
-            player.vx = 0;
-            player.vy = 0;
-            player.isDashing = false;
-            player.canDash = true;
-
-            // Death sound/effect placeholder
+            player.x = player.spawnX; player.y = player.spawnY;
+            player.vx = 0; player.vy = 0;
+            player.isDashing = false; player.canDash = true;
+            fmShieldActive = false;
+            cameraShake = 10;
         }
 
-        // Simple AABB Collision
         function rectIntersect(r1, r2) {
-            return !(r2.x > r1.x + r1.width ||
-                     r2.x + r2.width < r1.x ||
-                     r2.y > r1.y + r1.height ||
-                     r2.y + r2.height < r1.y);
+            return !(r2.x > r1.x + r1.width || r2.x + r2.width < r1.x || r2.y > r1.y + r1.height || r2.y + r2.height < r1.y);
         }
 
-        // Event Listeners for Input
         window.addEventListener('keydown', (e) => {
             if (keys.hasOwnProperty(e.key) || keys.hasOwnProperty(e.key.toLowerCase())) {
-                const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-                keys[key] = true;
+                keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = true;
             }
         });
-
         window.addEventListener('keyup', (e) => {
             if (keys.hasOwnProperty(e.key) || keys.hasOwnProperty(e.key.toLowerCase())) {
-                const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-                keys[key] = false;
+                keys[e.key.length === 1 ? e.key.toLowerCase() : e.key] = false;
             }
         });
-
-        // --- MENU LOGIC ---
-        function selectCharacter(colorName) {
-            document.querySelectorAll('.char-option').forEach(el => el.classList.remove('selected'));
-            document.getElementById(`char-${colorName}`).classList.add('selected');
-
-            if (colorName === 'red') player.color = '#e53935';
-            if (colorName === 'purple') player.color = '#8e24aa';
-            if (colorName === 'blue') player.color = '#1e88e5';
-        }
 
         function startGame() {
             document.getElementById('start-menu').classList.add('hidden');
             gameState = 'PLAYING';
-
             loadStage(currentStage);
-
-            // Try to play audio
-            const bgm = document.getElementById('bgm');
-            bgm.volume = 0.5;
-            bgm.play().catch(e => console.log("Audio play blocked. Click canvas to start."));
-
-            // Start Game Loop
             lastTime = performance.now();
             gameLoop(lastTime);
         }
 
-        // Puzzle UI Elements
-        const oscCanvas = document.getElementById('oscCanvas');
-        const oscCtx = oscCanvas.getContext('2d');
-        const puzzleControlsDiv = document.getElementById('puzzle-controls');
-
-        let puzzleState = {
-            type: 'AM', // 'AM', 'FM', 'COMBINED'
-            target: {},
-            current: {}
-        };
-
-        // --- GAME LOOP ---
-        let lastTime = 0;
-        let accumulator = 0;
-        const TIME_STEP = 1000 / 60; // Target 60fps for physics updates
+        // --- GAME LOOP & UPDATES ---
+        let lastTime = 0; let accumulator = 0; const TIME_STEP = 1000 / 60;
 
         function gameLoop(timestamp) {
             const deltaTime = timestamp - lastTime;
             lastTime = timestamp;
+            if (deltaTime > 250) accumulator = 0;
+            else accumulator += deltaTime;
 
-            // Cap extremely long frames (e.g. tab was inactive) to prevent physics explosion
-            if (deltaTime > 250) {
-                accumulator = 0;
-            } else {
-                accumulator += deltaTime;
-            }
-
-            // Fixed Timestep Update
-            while (accumulator >= TIME_STEP) {
-                update(TIME_STEP);
-                accumulator -= TIME_STEP;
-            }
-
+            while (accumulator >= TIME_STEP) { update(TIME_STEP); accumulator -= TIME_STEP; }
             draw(ctx);
-
-            if (gameState !== 'MENU') {
-                animationFrameId = requestAnimationFrame(gameLoop);
-            }
+            if (gameState !== 'MENU') animationFrameId = requestAnimationFrame(gameLoop);
         }
 
         function update(dt) {
-            // Weather updates (runs even during puzzle for lightning sync)
-            if (weatherType === 'rain') {
-                if (Math.random() < 0.01) { // 1% chance per frame for lightning
-                    lightningFlashTimer = 10;
-                    isLightningStriking = true;
-                    // playThunderSound() could go here
-                }
-                if (lightningFlashTimer > 0) {
-                    lightningFlashTimer--;
-                } else {
-                    isLightningStriking = false;
-                }
-            } else {
-                isLightningStriking = false;
-            }
-
             if (gameState !== 'PLAYING') return;
 
-            // Fixed multiplier if needed (e.g. dt / 16.66)
-            // But right now our physics values are tuned for 60 updates/sec.
+            // Camera shake decay
+            if (cameraShake > 0) cameraShake *= 0.9;
+            if (cameraShake < 0.5) cameraShake = 0;
 
-            // --- Camera Update ---
-            // Center camera on player
+            // Lightning in Stage 2/3
+            if (currentStage > 1) {
+                if (Math.random() < 0.01) { lightningFlashTimer = 10; isLightningStriking = true; }
+                if (lightningFlashTimer > 0) lightningFlashTimer--;
+                else isLightningStriking = false;
+            }
+
+            // Camera follow
             camera.targetX = player.x + player.width / 2 - camera.width / 2;
             camera.targetY = player.y + player.height / 2 - camera.height / 2;
-
-            // Smoothly move camera towards target
             camera.x += (camera.targetX - camera.x) * camera.lerp;
             camera.y += (camera.targetY - camera.y) * camera.lerp;
-
-            // Clamp camera to level bounds
             if (camera.x < 0) camera.x = 0;
             if (camera.x > levelWidth - camera.width) camera.x = levelWidth - camera.width;
             if (camera.y < 0) camera.y = 0;
             if (camera.y > levelHeight - camera.height) camera.y = levelHeight - camera.height;
 
-            // Dash logic
-            if (keys.Shift && player.canDash && !player.isDashing) {
-                player.isDashing = true;
-                player.canDash = false;
-                player.dashTimer = player.dashDuration;
+            // Player Trail Update
+            player.trail.push({x: player.x, y: player.y, alpha: 1.0});
+            if(player.trail.length > (player.isDashing ? 15 : 5)) player.trail.shift();
+            for(let i=0; i<player.trail.length; i++) player.trail[i].alpha -= 0.1;
 
-                // Determine dash direction from input
-                let dx = 0;
-                let dy = 0;
+            // Dash Logic
+            if (keys.Shift && player.canDash && !player.isDashing) {
+                player.isDashing = true; player.canDash = false; player.dashTimer = player.dashDuration;
+                cameraShake = 15; // impactful dash shake
+                let dx = 0; let dy = 0;
                 if (keys.ArrowLeft || keys.a) dx = -1;
                 if (keys.ArrowRight || keys.d) dx = 1;
                 if (keys.ArrowUp || keys.w) dy = -1;
                 if (keys.ArrowDown || keys.s) dy = 1;
-
-                // If no input, dash in facing direction
-                if (dx === 0 && dy === 0) {
-                    dx = player.facingDirection;
-                }
-
-                // Normalize diagonal dash
-                if (dx !== 0 && dy !== 0) {
-                    let length = Math.sqrt(dx*dx + dy*dy);
-                    dx /= length;
-                    dy /= length;
-                }
-
-                player.dashDirX = dx;
-                player.dashDirY = dy;
-
-                // Audio for dash
-                playDashSound();
+                if (dx === 0 && dy === 0) dx = player.facingDirection;
+                if (dx !== 0 && dy !== 0) { let length = Math.sqrt(dx*dx + dy*dy); dx /= length; dy /= length; }
+                player.dashDirX = dx; player.dashDirY = dy;
             }
 
             if (player.isDashing) {
                 player.dashTimer--;
                 player.vx = player.dashDirX * player.dashSpeed;
                 player.vy = player.dashDirY * player.dashSpeed;
-
-                if (player.dashTimer <= 0) {
-                    player.isDashing = false;
-                    // Reset velocities so you don't keep flying out of control
-                    player.vx *= 0.5;
-                    player.vy *= 0.5;
-                }
+                if (player.dashTimer <= 0) { player.isDashing = false; player.vx *= 0.5; player.vy *= 0.5; }
             } else {
-                // Horizontal Movement
-                if (keys.ArrowLeft || keys.a) {
-                    player.vx -= player.accel;
-                    player.facingDirection = -1;
-                } else if (keys.ArrowRight || keys.d) {
-                    player.vx += player.accel;
-                    player.facingDirection = 1;
-                }
-
-                // Apply friction
+                if (keys.ArrowLeft || keys.a) { player.vx -= player.accel; player.facingDirection = -1; }
+                else if (keys.ArrowRight || keys.d) { player.vx += player.accel; player.facingDirection = 1; }
                 player.vx *= player.friction;
-
-                // Cap speed
-                if (Math.abs(player.vx) > player.maxSpeed) {
-                    player.vx = Math.sign(player.vx) * player.maxSpeed;
-                }
-
-                // Jumping
+                if (Math.abs(player.vx) > player.maxSpeed) player.vx = Math.sign(player.vx) * player.maxSpeed;
                 if (keys[' '] && player.grounded) {
-                    player.vy = -player.jumpPower;
-                    player.grounded = false;
-
-                    // Jump Squash and Stretch
-                    player.scaleX = 0.5;
-                    player.scaleY = 1.5;
-
-                    // Add a small jump sound effect using Web Audio API
-                    playJumpSound();
+                    player.vy = -player.jumpPower; player.grounded = false;
+                    player.scaleX = 0.5; player.scaleY = 1.5;
                 }
-
-                // Apply gravity
-                player.vy += player.gravity;
+                player.vy += player.gravity; // Heavier gravity
             }
 
-            // Apply velocity to position
-            player.x += player.vx;
-            player.y += player.vy;
+            player.x += player.vx; player.y += player.vy;
 
-            // --- Collisions ---
-            let wasGrounded = player.grounded;
-            player.grounded = false;
-
-            // Wall collisions (level bounds)
+            // Collisions
+            let wasGrounded = player.grounded; player.grounded = false;
             if (player.x < 0) { player.x = 0; player.vx = 0; }
             if (player.x + player.width > levelWidth) { player.x = levelWidth - player.width; player.vx = 0; }
 
-            // Platform collisions
             for (let plat of platforms) {
-                // Very simple Top-only collision for platforms
-                if (player.vy >= 0 &&
-                    player.y + player.height >= plat.y &&
-                    player.y + player.height <= plat.y + player.vy + 2 &&
-                    player.x + player.width > plat.x &&
-                    player.x < plat.x + plat.width) {
-
-                    player.y = plat.y - player.height;
-                    player.vy = 0;
-                    player.grounded = true;
-                    // Reset dash when hitting ground
-                    player.canDash = true;
+                if (player.vy >= 0 && player.y + player.height >= plat.y && player.y + player.height <= plat.y + player.vy + 2 && player.x + player.width > plat.x && player.x < plat.x + plat.width) {
+                    player.y = plat.y - player.height; player.vy = 0; player.grounded = true; player.canDash = true;
                 }
             }
 
-            // Landing squash
-            if (!wasGrounded && player.grounded) {
-                player.scaleX = 1.5;
-                player.scaleY = 0.5;
+            if (!wasGrounded && player.grounded) { player.scaleX = 1.5; player.scaleY = 0.5; }
+            player.scaleX += (1.0 - player.scaleX) * 0.15; player.scaleY += (1.0 - player.scaleY) * 0.15;
+            if (!player.grounded) { let stretch = Math.abs(player.vy) / 25; player.scaleY = 1.0 + stretch; player.scaleX = 1.0 - stretch * 0.5; }
+
+            // Enemies & Projectiles
+            for (let e of enemies) {
+                if (e.type === 'lawyer') {
+                    e.x += e.vx;
+                    if (e.x < e.startX || e.x > e.endX) e.vx *= -1;
+                    e.timer++;
+                    if (e.timer > 120 && Math.abs(player.x - e.x) < 400) { // throw document
+                        e.timer = 0;
+                        projectiles.push({ type: 'doc', x: e.x, y: e.y, vx: Math.sign(player.x - e.x) * 4, vy: -3, width: 15, height: 10 });
+                    }
+                } else if (e.type === 'bot') {
+                    e.timer++;
+                    if (e.timer > 90 && Math.abs(player.x - e.x) < 400) { // shoot static
+                        e.timer = 0;
+                        let dx = player.x - e.x; let dy = player.y - e.y;
+                        let len = Math.sqrt(dx*dx + dy*dy);
+                        projectiles.push({ type: 'static', x: e.x+20, y: e.y+20, vx: (dx/len)*5, vy: (dy/len)*5, width: 10, height: 10 });
+                    }
+                }
+
+                if (!fmShieldActive && rectIntersect(player, e)) resetPlayer();
             }
 
-            // Smoothly return scaling to 1.0 (normal)
-            player.scaleX += (1.0 - player.scaleX) * 0.15;
-            player.scaleY += (1.0 - player.scaleY) * 0.15;
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                let p = projectiles[i];
+                p.x += p.vx; p.y += p.vy;
+                if (p.type === 'doc') p.vy += 0.1; // gravity for documents
 
-            // In-air dynamic scaling based on vertical velocity
-            if (!player.grounded) {
-                let stretch = Math.abs(player.vy) / 20; // max stretch based on speed
-                player.scaleY = 1.0 + stretch;
-                player.scaleX = 1.0 - stretch * 0.5;
+                if (p.x < 0 || p.x > levelWidth || p.y > levelHeight) { projectiles.splice(i, 1); continue; }
+
+                if (!fmShieldActive && rectIntersect(player, p)) { resetPlayer(); }
             }
 
-            // Hazard collisions
+            // Hazards (Static Lightning Pits)
             for (let haz of hazards) {
-                // Shrink player hitbox slightly for hazards to make it fair
                 let hitBox = {x: player.x+5, y: player.y+5, width: player.width-10, height: player.height-5};
-                if (rectIntersect(hitBox, haz)) {
-                    resetPlayer();
-                }
+                if (!fmShieldActive && rectIntersect(hitBox, haz)) resetPlayer();
             }
 
-            // Strawberry collisions
-            for (let berry of strawberries) {
-                if (!berry.collected && rectIntersect(player, berry)) {
-                    berry.collected = true;
-                    totalStrawberriesCollected++;
-                    playCollectSound();
-                }
+            // Collectibles
+            for (let t of vacuumTubes) {
+                if (!t.collected && rectIntersect(player, t)) { t.collected = true; totalTubesCollected++; }
             }
-
-            // Lore Collectibles collisions
-            for (let lore of loreCollectibles) {
-                if (!lore.collected && rectIntersect(player, lore)) {
-                    lore.collected = true;
-                    collectedLore[lore.name] = true;
-                    playCollectSound();
-                }
-            }
-
-            // Power-up collisions
             for (let pup of powerups) {
                 if (!pup.collected && rectIntersect(player, pup)) {
-                    pup.collected = true;
-                    if (pup.type === 'Low Pass Filter') {
-                        filterActive = true;
-                        filterTimer = 10.0; // 10 seconds
-                        playCollectSound(); // Can make a distinct sound later if desired
-                    }
+                    pup.collected = true; fmShieldActive = true; fmShieldTimer = 10.0;
                 }
             }
 
-            // Update Filter Timer
-            if (filterActive) {
-                filterTimer -= (dt / 1000);
-                if (filterTimer <= 0) {
-                    filterTimer = 0;
-                    filterActive = false;
-                }
+            if (fmShieldActive) {
+                fmShieldTimer -= (dt / 1000);
+                if (fmShieldTimer <= 0) { fmShieldTimer = 0; fmShieldActive = false; }
             }
 
-            // Door Collision
-            for (let door of doors) {
-                if (rectIntersect(player, door)) {
-                    if (keys.ArrowUp || keys.w) {
-                        if (door.type === 'secret_lab') {
-                            enterSecretLab();
-                            keys.ArrowUp = false;
-                            keys.w = false;
-                        }
-                    }
-                }
-            }
-
-            // Interactable collision (Tesca Machine)
             for (let item of interactables) {
-                if (item.active && rectIntersect(player, item)) {
-                    // Show interact prompt
-                    if (keys.e) {
-                        openTuning(item.puzzleType);
-                        keys.e = false; // Prevent rapid triggering
+                if (item.active && rectIntersect(player, item) && keys.e) {
+                    if (item.type === 'tesca') { openPuzzle(item.puzzleType); keys.e = false; }
+                }
+            }
+        }
+
+
+        // --- DRAWING ---
+        function drawPlayer(ctx, px, py, pw, ph, dir, isDashing) {
+            ctx.save();
+            ctx.translate(px + pw / 2, py + ph); // Origin at bottom center
+            ctx.scale(player.scaleX, player.scaleY);
+            if (dir === -1) ctx.scale(-1, 1);
+
+            let dx = -pw / 2; let dy = -ph;
+
+            // FM Aura / Shield
+            if (fmShieldActive || isDashing) {
+                ctx.shadowBlur = 20; ctx.shadowColor = COLORS.fmBlue;
+                ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
+                ctx.beginPath(); ctx.ellipse(0, dy + ph/2, pw*0.8, ph*0.6, 0, 0, Math.PI*2); ctx.fill();
+            }
+
+            // Trench coat
+            ctx.fillStyle = COLORS.trenchCoat;
+            ctx.fillRect(dx, dy + 10, pw, ph - 10);
+
+            // Collar/Lapels
+            ctx.fillStyle = '#3e2723';
+            ctx.beginPath(); ctx.moveTo(dx+5, dy+10); ctx.lineTo(dx+15, dy+25); ctx.lineTo(dx+10, dy+10); ctx.fill();
+
+            // Head (Fedora + Face)
+            ctx.fillStyle = COLORS.skin;
+            ctx.fillRect(dx + 4, dy + 2, pw - 8, 12);
+            // Fedora
+            ctx.fillStyle = '#4e342e';
+            ctx.fillRect(dx, dy, pw, 5); // Brim
+            ctx.fillRect(dx + 4, dy - 8, pw - 8, 8); // Crown
+
+            // Wrench (Glowing)
+            ctx.fillStyle = '#757575';
+            ctx.fillRect(dx + pw - 5, dy + 20, 4, 15); // Handle
+            ctx.fillStyle = COLORS.fmBlue; // Glowing head
+            ctx.shadowBlur = 10; ctx.shadowColor = COLORS.fmBlue;
+            ctx.beginPath(); ctx.arc(dx + pw - 3, dy + 18, 5, 0, Math.PI*2); ctx.fill();
+
+            ctx.restore();
+        }
+
+        function draw(ctx) {
+            if (gameState === 'PUZZLE') { drawPuzzleWaveform(); return; }
+            if (gameState === 'WIN') return;
+
+            // Clear & Background
+            ctx.fillStyle = COLORS.bgDark;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            let parallaxX = (camera.x * 0.3) % bgCanvas.width;
+            ctx.drawImage(bgCanvas, -parallaxX, 0, bgCanvas.width, bgCanvas.height);
+            ctx.drawImage(bgCanvas, bgCanvas.width - parallaxX, 0, bgCanvas.width, bgCanvas.height);
+
+            if (isLightningStriking) {
+                ctx.fillStyle = 'rgba(200, 200, 200, 0.2)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            ctx.save();
+            // Apply camera with shake
+            let cx = camera.x + (Math.random() * cameraShake - cameraShake/2);
+            let cy = camera.y + (Math.random() * cameraShake - cameraShake/2);
+            ctx.translate(-cx, -cy);
+
+            // Platforms (Industrial metal/wood)
+            for (let plat of platforms) {
+                if (plat.x + plat.width < camera.x || plat.x > camera.x + camera.width) continue;
+                ctx.fillStyle = '#2c3e50'; // metal gray
+                ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
+                ctx.fillStyle = '#b5a642'; // brass trim
+                ctx.fillRect(plat.x, plat.y, plat.width, 3);
+
+                // Rivets
+                ctx.fillStyle = '#000';
+                for(let i=10; i<plat.width; i+=30) {
+                    ctx.fillRect(plat.x + i, plat.y + plat.height/2, 2, 2);
+                }
+            }
+
+            // Hazards (Static Lightning)
+            let time = performance.now() / 100;
+            for (let haz of hazards) {
+                if (haz.x + haz.width < camera.x || haz.x > camera.x + camera.width) continue;
+                ctx.fillStyle = 'rgba(154, 205, 50, 0.2)'; // staticGreen bg
+                ctx.fillRect(haz.x, haz.y, haz.width, haz.height);
+
+                ctx.strokeStyle = (Math.random() > 0.5) ? COLORS.staticGreen : COLORS.staticYellow;
+                ctx.lineWidth = 2; ctx.shadowBlur = 10; ctx.shadowColor = ctx.strokeStyle;
+                ctx.beginPath();
+                for(let i=0; i<haz.width; i+=15) {
+                    let h = Math.random() * haz.height;
+                    if (i===0) ctx.moveTo(haz.x + i, haz.y + h);
+                    else ctx.lineTo(haz.x + i, haz.y + h);
+                }
+                ctx.stroke(); ctx.shadowBlur = 0;
+            }
+
+            // Vacuum Tubes
+            for (let t of vacuumTubes) {
+                if (t.collected) continue;
+                t.y = t.originY + Math.sin(time*0.03 + t.floatOffset) * 5;
+                ctx.fillStyle = '#eceff1'; // glass body
+                ctx.fillRect(t.x, t.y, t.width, t.height);
+                ctx.fillStyle = COLORS.fmBlue; // glowing filament
+                ctx.shadowBlur = 10; ctx.shadowColor = COLORS.fmBlue;
+                ctx.fillRect(t.x+4, t.y+4, 4, t.height-8);
+                ctx.shadowBlur = 0;
+            }
+
+            // Powerups (FM Shield)
+            for (let pup of powerups) {
+                if (pup.collected) continue;
+                pup.y = pup.originY + Math.sin(time*0.04 + pup.floatOffset) * 6;
+                ctx.shadowBlur = 15; ctx.shadowColor = COLORS.fmBlue;
+                ctx.fillStyle = '#00ffff'; ctx.beginPath(); ctx.arc(pup.x+12, pup.y+12, 12, 0, Math.PI*2); ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#fff'; ctx.font = '10px Courier New'; ctx.fillText("FM Shield", pup.x - 15, pup.y - 5);
+            }
+
+            // Enemies & Projectiles
+            for(let e of enemies) {
+                if(e.type === 'lawyer') {
+                    ctx.fillStyle = COLORS.lawyerSuit; ctx.fillRect(e.x, e.y, e.width, e.height);
+                    ctx.fillStyle = '#fff'; ctx.fillRect(e.x+10, e.y+10, 10, 15); // shirt
+                    ctx.fillStyle = '#d32f2f'; ctx.fillRect(e.x+13, e.y+10, 4, 10); // tie
+                    // Briefcase
+                    ctx.fillStyle = '#3e2723';
+                    let caseX = e.vx > 0 ? e.x + e.width - 5 : e.x - 10;
+                    ctx.fillRect(caseX, e.y + e.height/2, 15, 10);
+                } else if (e.type === 'bot') {
+                    ctx.fillStyle = COLORS.radioBot; ctx.fillRect(e.x, e.y, e.width, e.height);
+                    ctx.fillStyle = '#212121'; ctx.beginPath(); ctx.arc(e.x+20, e.y+20, 10, 0, Math.PI*2); ctx.fill(); // speaker
+                    if(Math.random() > 0.8) {
+                        ctx.fillStyle = COLORS.redStatic;
+                        ctx.fillRect(e.x+10, e.y+5, 20, 5); // static dial
                     }
                 }
             }
-        }
 
-        // --- TUNING MINIGAME ---
-        function openTuning(puzzleType) {
-            gameState = 'TUNING';
-            tuningState.active = true;
-            tuningState.pendingPuzzleType = puzzleType;
-            tuningState.knobAngle = Math.random() * 360;
-            tuningState.targetAngle = Math.random() * 360;
-            // Ensure target is somewhat far from start
-            while(Math.abs(tuningState.targetAngle - tuningState.knobAngle) < 60) {
-                tuningState.targetAngle = Math.random() * 360;
-            }
-
-            updateTuningUI();
-            document.getElementById('tuning-menu').classList.remove('hidden');
-        }
-
-        function closeTuning(success) {
-            tuningState.active = false;
-            document.getElementById('tuning-menu').classList.add('hidden');
-            if (success) {
-                openPuzzle(tuningState.pendingPuzzleType);
-            } else {
-                gameState = 'PLAYING';
-            }
-        }
-
-        // Mouse events for Tuning Knob
-        tuningKnob.addEventListener('mousedown', (e) => { tuningState.isDragging = true; });
-        window.addEventListener('mouseup', () => { tuningState.isDragging = false; });
-        window.addEventListener('mousemove', (e) => {
-            if (!tuningState.isDragging || !tuningState.active) return;
-
-            const rect = tuningKnob.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-
-            // Calculate angle from center to mouse
-            let angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
-            // Offset so top is 0
-            angle = (angle + 90 + 360) % 360;
-
-            tuningState.knobAngle = angle;
-            updateTuningUI();
-        });
-
-        function updateTuningUI() {
-            tuningKnob.style.transform = `rotate(${tuningState.knobAngle}deg)`;
-
-            // Calculate distance to target (shortest angular distance)
-            let diff = Math.abs(tuningState.targetAngle - tuningState.knobAngle);
-            if (diff > 180) diff = 360 - diff;
-
-            // If very close, lock in and proceed
-            if (diff < 5) {
-                tuningState.isDragging = false;
-                setTimeout(() => closeTuning(true), 500);
-            }
-        }
-
-        function drawTuningStatic() {
-            if (!tuningState.active) return;
-
-            // Calculate distance to target to determine noise level
-            let diff = Math.abs(tuningState.targetAngle - tuningState.knobAngle);
-            if (diff > 180) diff = 360 - diff;
-
-            // 0 is perfect, 180 is max noise
-            let noiseLevel = diff / 180.0;
-
-            tuningCtx.fillStyle = '#000';
-            tuningCtx.fillRect(0, 0, tuningCanvas.width, tuningCanvas.height);
-
-            tuningCtx.strokeStyle = '#66bb6a';
-            tuningCtx.lineWidth = 2;
-            tuningCtx.beginPath();
-
-            let time = performance.now() / 100;
-
-            for (let x = 0; x < tuningCanvas.width; x += 2) {
-                // Base sine wave
-                let y = Math.sin(x * 0.05 - time) * 20;
-
-                // Add noise based on distance from target
-                if (noiseLevel > 0.05) {
-                    y += (Math.random() - 0.5) * (noiseLevel * 100);
+            for(let p of projectiles) {
+                if(p.type === 'doc') {
+                    ctx.fillStyle = '#fff'; ctx.fillRect(p.x, p.y, p.width, p.height);
+                    ctx.fillStyle = '#000'; ctx.fillRect(p.x+2, p.y+2, p.width-4, 1); ctx.fillRect(p.x+2, p.y+5, p.width-4, 1);
+                } else if (p.type === 'static') {
+                    ctx.fillStyle = COLORS.redStatic; ctx.shadowBlur = 10; ctx.shadowColor = COLORS.redStatic;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.width/2, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
                 }
-
-                if (x === 0) tuningCtx.moveTo(x, tuningCanvas.height/2 + y);
-                else tuningCtx.lineTo(x, tuningCanvas.height/2 + y);
             }
-            tuningCtx.stroke();
 
-            requestAnimationFrame(drawTuningStatic);
+            // Tesca 40501
+            for (let item of interactables) {
+                if (item.active) {
+                    ctx.fillStyle = '#3e2723'; ctx.fillRect(item.x, item.y, item.width, item.height); // Wood case
+                    ctx.fillStyle = '#b5a642'; ctx.fillRect(item.x, item.y, item.width, 4); // Brass top
+                    ctx.fillStyle = '#0a0a0a'; ctx.fillRect(item.x + 5, item.y + 10, item.width - 10, 20); // Screen
+
+                    ctx.strokeStyle = COLORS.fmBlue; ctx.beginPath();
+                    for(let i=0; i < item.width-10; i++) {
+                        ctx.lineTo(item.x + 5 + i, item.y + 20 + Math.sin((i+time)*0.5)*5);
+                    }
+                    ctx.stroke();
+
+                    if (rectIntersect(player, item)) {
+                        ctx.fillStyle = '#b5a642'; ctx.font = '14px Courier New';
+                        ctx.fillText("Press 'E' to Tune", item.x - 30, item.y - 10);
+                    }
+                }
+            }
+
+            // Player Trail
+            for(let t of player.trail) {
+                if(t.alpha <= 0) continue;
+                ctx.globalAlpha = t.alpha * 0.5;
+                drawPlayer(ctx, t.x, t.y, player.width, player.height, player.facingDirection, true);
+                ctx.globalAlpha = 1.0;
+            }
+
+            // Draw Player
+            drawPlayer(ctx, player.x, player.y, player.width, player.height, player.facingDirection, player.isDashing);
+
+            ctx.restore(); // Camera
+
+            // HUD
+            ctx.fillStyle = COLORS.fmBlue; ctx.font = '20px Courier New';
+            ctx.fillText(`Stage ${currentStage}`, 20, 30);
+
+            ctx.fillStyle = '#eceff1';
+            ctx.fillText(`Vacuum Tubes: ${totalTubesCollected}`, 20, 60);
+
+            if (fmShieldActive) {
+                ctx.fillStyle = COLORS.fmBlue;
+                ctx.fillText(`FM Shield: ${fmShieldTimer.toFixed(1)}s`, canvas.width / 2 - 80, 30);
+            }
         }
 
-        // --- PUZZLE LOGIC ---
+
+        let puzzleState = { type: 'AM', target: {}, current: {} };
+        const oscCanvas = document.getElementById('oscCanvas');
+        const oscCtx = oscCanvas.getContext('2d');
+        const puzzleControlsDiv = document.getElementById('puzzle-controls');
 
         function openPuzzle(type) {
-            gameState = 'PUZZLE';
-            document.getElementById('puzzle-menu').classList.remove('hidden');
-            document.getElementById('puzzle-feedback').innerText = "";
-            puzzleState.type = type;
-
-            let title = "";
-            let desc = "";
+            gameState = 'PUZZLE'; document.getElementById('puzzle-menu').classList.remove('hidden');
+            document.getElementById('puzzle-feedback').innerText = ""; puzzleState.type = type;
             let htmlControls = "";
 
             if (type === 'AM') {
-                title = "Tesca 40501: Amplitude Modulation (AM)";
-                desc = "AM changes the AMPLITUDE (height) of a high-frequency carrier wave based on a low-frequency message signal. Match the target carrier and message amplitudes.";
-                puzzleState.target = { Ac: 50, Am: 30, fc: 20, fm: 2 }; // Target values
-                puzzleState.current = { Ac: 10, Am: 10, fc: 20, fm: 2 }; // Initial values for sliders
-
+                puzzleState.target = { Ac: 50, Am: 30, fc: 20, fm: 2 }; puzzleState.current = { Ac: 10, Am: 10, fc: 20, fm: 2 };
                 htmlControls = `
-                    <label>Carrier Amplitude (Ac): <span id="val_Ac">10</span></label>
-                    <input type="range" id="slider_Ac" min="10" max="80" value="10" oninput="updatePuzzle('Ac', this.value)">
-
-                    <label>Message Amplitude (Am): <span id="val_Am">10</span></label>
-                    <input type="range" id="slider_Am" min="0" max="50" value="10" oninput="updatePuzzle('Am', this.value)">
-                `;
+                    <label>Carrier Amp (Ac): <span id="val_Ac">10</span></label><input type="range" id="slider_Ac" min="10" max="80" value="10" oninput="updatePuzzle('Ac', this.value)">
+                    <label>Message Amp (Am): <span id="val_Am">10</span></label><input type="range" id="slider_Am" min="0" max="50" value="10" oninput="updatePuzzle('Am', this.value)">`;
             } else if (type === 'FM') {
-                title = "Tesca 40501: Frequency Modulation (FM)";
-                desc = "FM changes the FREQUENCY (speed of oscillation) of the carrier wave based on the message signal. Match the target frequency deviation.";
-                puzzleState.target = { Ac: 40, fc: 15, fm: 2, beta: 5 }; // Beta is modulation index
-                puzzleState.current = { Ac: 40, fc: 15, fm: 2, beta: 0 };
-
-                htmlControls = `
-                    <label>Modulation Index / Dev: <span id="val_beta">0</span></label>
-                    <input type="range" id="slider_beta" min="0" max="10" value="0" oninput="updatePuzzle('beta', this.value)">
-                `;
+                puzzleState.target = { Ac: 40, fc: 15, fm: 2, beta: 5 }; puzzleState.current = { Ac: 40, fc: 15, fm: 2, beta: 0 };
+                htmlControls = `<label>Modulation Index: <span id="val_beta">0</span></label><input type="range" id="slider_beta" min="0" max="10" value="0" oninput="updatePuzzle('beta', this.value)">`;
             } else if (type === 'COMBINED') {
-                title = "Tesca 40501: Master Modulation";
-                desc = "Adjust both Amplitude and Frequency characteristics to match this complex signal!";
-                puzzleState.target = { Ac: 40, Am: 25, fc: 15, fm: 2, beta: 6 };
-                puzzleState.current = { Ac: 10, Am: 0, fc: 15, fm: 2, beta: 0 };
-
+                puzzleState.target = { Ac: 40, Am: 25, fc: 15, fm: 2, beta: 6 }; puzzleState.current = { Ac: 10, Am: 0, fc: 15, fm: 2, beta: 0 };
                 htmlControls = `
-                    <label>Carrier Amp (Ac): <span id="val_Ac">10</span></label>
-                    <input type="range" id="slider_Ac" min="10" max="60" value="10" oninput="updatePuzzle('Ac', this.value)">
-                    <label>Message Amp (Am): <span id="val_Am">0</span></label>
-                    <input type="range" id="slider_Am" min="0" max="40" value="0" oninput="updatePuzzle('Am', this.value)">
-                    <label>Modulation Index: <span id="val_beta">0</span></label>
-                    <input type="range" id="slider_beta" min="0" max="10" value="0" oninput="updatePuzzle('beta', this.value)">
-                `;
+                    <label>Carrier Amp (Ac): <span id="val_Ac">10</span></label><input type="range" id="slider_Ac" min="10" max="60" value="10" oninput="updatePuzzle('Ac', this.value)">
+                    <label>Message Amp (Am): <span id="val_Am">0</span></label><input type="range" id="slider_Am" min="0" max="40" value="0" oninput="updatePuzzle('Am', this.value)">
+                    <label>Modulation Index: <span id="val_beta">0</span></label><input type="range" id="slider_beta" min="0" max="10" value="0" oninput="updatePuzzle('beta', this.value)">`;
             }
-
-            document.getElementById('puzzle-title').innerHTML = title;
-            document.getElementById('puzzle-desc').innerHTML = desc;
             puzzleControlsDiv.innerHTML = htmlControls;
         }
 
@@ -1027,20 +815,14 @@
         function checkPuzzle() {
             let success = true;
             for (let key in puzzleState.target) {
-                if (puzzleState.target.hasOwnProperty(key) && puzzleState.current.hasOwnProperty(key)) {
-                    // Check if values match exactly
-                    if (Math.abs(puzzleState.target[key] - puzzleState.current[key]) > 0.1) {
-                        success = false;
-                    }
-                }
+                if (Math.abs(puzzleState.target[key] - puzzleState.current[key]) > 0.1) success = false;
             }
-
             if (success) {
-                document.getElementById('puzzle-feedback').style.color = "#81c784";
+                document.getElementById('puzzle-feedback').style.color = "#00ffff";
                 document.getElementById('puzzle-feedback').innerText = "Signal Matched! Lock disengaged.";
                 setTimeout(() => { closePuzzle(true); }, 1500);
             } else {
-                document.getElementById('puzzle-feedback').style.color = "#ff1744";
+                document.getElementById('puzzle-feedback').style.color = "#d32f2f";
                 document.getElementById('puzzle-feedback').innerText = "Signal mismatch. Adjust the dials.";
             }
         }
@@ -1051,569 +833,49 @@
             if (success) {
                 currentStage++;
                 if (currentStage > 3) {
-                    startEpilogue();
-                } else {
-                    loadStage(currentStage);
+                    gameState = 'WIN';
+                    document.getElementById('win-screen').classList.remove('hidden');
+
+                    // Final Grade Logic
+                    let grade = 'C';
+                    if (totalTubesCollected >= 6) grade = 'S';
+                    else if (totalTubesCollected >= 4) grade = 'A';
+                    else if (totalTubesCollected >= 2) grade = 'B';
+
+                    document.getElementById('final-grade').innerText = 'Grade: ' + grade;
+
+                    let gradeMsg = "";
+                    if (grade === 'S') gradeMsg = "Perfection! Armstrong's legacy is untarnished and fully restored.";
+                    else if (grade === 'A') gradeMsg = "Excellent work. The FM truth resonates clearly.";
+                    else if (grade === 'B') gradeMsg = "Good job. The transmission is stable, though slightly noisy.";
+                    else gradeMsg = "You survived, but Sarnoff's static still lingers. Collect more Vacuum Tubes next time.";
+
+                    document.getElementById('grade-message').innerText = gradeMsg;
                 }
+                else loadStage(currentStage);
             }
-        }
-
-        // Dialogue State
-        let dialogueIndex = -1;
-        const dialogueSequence = [
-            { text: "Hoo! You have climbed well. But to truly master the mountain, you must understand the machine that guided you: The Tesca 40591.", area: null },
-            { text: "This is the Amplitude Modulation and Demodulation board. Let us trace the path of the signals you just manipulated.", area: null },
-            { text: "It begins here at the Carrier Signal generator, creating a high-frequency sine wave.", area: 'area-carrier-signal' },
-            { text: "This carrier wave is fed into the Carrier In terminal.", area: 'area-carrier-in' },
-            { text: "Next, the message we want to send—the low-frequency Audio signal—is fed into the Audio In terminal.", area: 'area-audio-in' },
-            { text: "Both the carrier and the audio signals are directed into the Modulator circuit, powered by transistors T1 and T2.", area: 'area-modulator' },
-            { text: "Here, the amplitude of the carrier wave is varied in accordance with the instantaneous amplitude of the modulating signal.", area: 'area-modulator' },
-            { text: "Finally, the newly shaped wave travels through an isolation transformer and is delivered at the Modulated Output, ready for transmission!", area: 'area-output' },
-            { text: "And if we want to retrieve the signal, we use the Demodulator circuit below, passing the modulated signal through diode D1 and an RC filter.", area: 'area-demodulator' },
-            { text: "These simple principles are how radios transmit voices and data across vast distances. You are now a master of waves.", area: null }
-        ];
-
-        function startEpilogue() {
-            gameState = 'EPILOGUE';
-            document.getElementById('epilogue-screen').classList.remove('hidden');
-            dialogueIndex = -1;
-            nextDialogue(); // Start dialogue sequence
-        }
-
-        function nextDialogue() {
-            dialogueIndex++;
-            if (dialogueIndex >= dialogueSequence.length) {
-                finishEpilogue();
-                return;
-            }
-
-            const current = dialogueSequence[dialogueIndex];
-
-            // Set text
-            document.getElementById('dialogue-text').innerText = current.text;
-
-            // Handle highlighting
-            document.querySelectorAll('.highlighted-area').forEach(el => el.style.display = 'none');
-            if (current.area) {
-                document.getElementById(current.area).style.display = 'block';
-            }
-        }
-
-        function enterSecretLab() {
-            gameState = 'SECRET';
-            document.getElementById('secret-lab').classList.remove('hidden');
-        }
-
-        function exitSecretLab() {
-            document.getElementById('secret-lab').classList.add('hidden');
-            gameState = 'PLAYING';
-            // Move player slightly away from door to prevent instant re-entry
-            player.x -= 50;
-        }
-
-        function finishEpilogue() {
-            document.getElementById('epilogue-screen').classList.add('hidden');
-            gameState = 'WIN';
-
-            // Calculate Final Grade
-            let loreCount = Object.values(collectedLore).filter(v => v).length;
-            let grade = 'C';
-            if (loreCount === 4) grade = 'S';
-            else if (loreCount === 3) grade = 'A';
-            else if (loreCount >= 2) grade = 'B';
-
-            let gradeColor = '#ff1744'; // C - Red
-            if (grade === 'S') gradeColor = '#ffeb3b'; // Yellow/Gold
-            if (grade === 'A') gradeColor = '#66bb6a'; // Green
-            if (grade === 'B') gradeColor = '#29b6f6'; // Blue
-
-            let gradeEl = document.getElementById('final-grade');
-            gradeEl.innerText = `Grade: ${grade}`;
-            gradeEl.style.color = gradeColor;
-
-            let msgEl = document.getElementById('grade-message');
-            if (loreCount === 4) {
-                msgEl.innerText = "You have gathered all the parts required to build the Modulator circuit!";
-                msgEl.style.color = '#66bb6a';
-            } else {
-                msgEl.innerText = `You gathered ${loreCount}/4 parts. The Modulator is incomplete.`;
-                msgEl.style.color = '#ffb74d';
-            }
-
-            document.getElementById('win-screen').classList.remove('hidden');
-        }
-
-        // Simple Audio Context for SFX
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playJumpSound() {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
-
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
-        }
-
-        function playDashSound() {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.15);
-
-            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.15);
-        }
-
-        function playCollectSound() {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.05);
-            osc.frequency.setValueAtTime(1600, audioCtx.currentTime + 0.1);
-
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.15);
         }
 
         function drawPuzzleWaveform() {
             if (gameState !== 'PUZZLE') return;
-
-            oscCtx.fillStyle = '#000';
-            oscCtx.fillRect(0, 0, oscCanvas.width, oscCanvas.height);
-
+            oscCtx.fillStyle = '#000'; oscCtx.fillRect(0, 0, oscCanvas.width, oscCanvas.height);
             const drawWave = (params, color, isTarget) => {
-                let addNoise = false;
-                if (!isTarget && puzzleState.type === 'AM' && isLightningStriking && !filterActive) {
-                    addNoise = true;
-                }
-
-                oscCtx.strokeStyle = color;
-                oscCtx.lineWidth = isTarget ? 3 : 2;
-                if (isTarget) oscCtx.setLineDash([5, 5]); // Dashed line for target
-                else oscCtx.setLineDash([]);
-
+                oscCtx.strokeStyle = color; oscCtx.lineWidth = isTarget ? 3 : 2;
+                if (isTarget) oscCtx.setLineDash([5, 5]); else oscCtx.setLineDash([]);
                 oscCtx.beginPath();
                 for (let x = 0; x < oscCanvas.width; x++) {
-                    let t = x / oscCanvas.width * 2 * Math.PI; // Time factor
-                    let y = 0;
-
-                    if (puzzleState.type === 'AM') {
-                        // y(t) = [Ac + Am * cos(2*pi*fm*t)] * cos(2*pi*fc*t)
-                        let envelope = params.Ac + params.Am * Math.cos(params.fm * t);
-                        y = envelope * Math.cos(params.fc * t);
-                    } else if (puzzleState.type === 'FM') {
-                        // y(t) = Ac * cos(2*pi*fc*t + beta * sin(2*pi*fm*t))
-                        y = params.Ac * Math.cos(params.fc * t + params.beta * Math.sin(params.fm * t));
-                    } else if (puzzleState.type === 'COMBINED') {
-                        // Mix of both for final stage
-                        let envelope = params.Ac + params.Am * Math.cos(params.fm * t);
-                        y = envelope * Math.cos(params.fc * t + params.beta * Math.sin(params.fm * t));
-                    }
-
-                    if (addNoise) {
-                        y += (Math.random() * 20 - 10); // Noise spike amplitude
-                    }
-
+                    let t = x / oscCanvas.width * 2 * Math.PI; let y = 0;
+                    if (puzzleState.type === 'AM') { let env = params.Ac + params.Am * Math.cos(params.fm * t); y = env * Math.cos(params.fc * t); }
+                    else if (puzzleState.type === 'FM') y = params.Ac * Math.cos(params.fc * t + params.beta * Math.sin(params.fm * t));
+                    else { let env = params.Ac + params.Am * Math.cos(params.fm * t); y = env * Math.cos(params.fc * t + params.beta * Math.sin(params.fm * t)); }
                     let plotY = oscCanvas.height / 2 - y;
-                    if (x === 0) oscCtx.moveTo(x, plotY);
-                    else oscCtx.lineTo(x, plotY);
+                    if (x === 0) oscCtx.moveTo(x, plotY); else oscCtx.lineTo(x, plotY);
                 }
                 oscCtx.stroke();
             };
-
-            // Draw Target Wave (Red-ish)
-            drawWave(puzzleState.target, '#ef5350', true);
-            // Draw Current Wave (Green-ish)
-            drawWave(puzzleState.current, '#66bb6a', false);
+            drawWave(puzzleState.target, '#8b7d3b', true); drawWave(puzzleState.current, '#00ffff', false);
         }
 
-        const bgImage = new Image();
-        bgImage.src = 'celeste-switch-review-5.jpeg';
-        let bgLoaded = false;
-        bgImage.onload = () => { bgLoaded = true; };
-
-        const charImage = new Image();
-        charImage.src = 'frisk.png';
-        let charLoaded = false;
-        charImage.onload = () => { charLoaded = true; };
-
-        function drawMountains(ctx) {
-            if (!bgLoaded) return;
-            // Parallax effect based on camera X
-            // Assuming image width might be different, let's draw it repeating if needed
-            let parallaxX = (camera.x * 0.2) % canvas.width;
-
-            // Draw original
-            ctx.drawImage(bgImage, -parallaxX, 0, canvas.width, canvas.height);
-            // Draw wrapping part
-            ctx.drawImage(bgImage, canvas.width - parallaxX, 0, canvas.width, canvas.height);
-        }
-
-        function drawTopAudioVisualizer(ctx) {
-            let time = performance.now() / 1000;
-            ctx.strokeStyle = '#66fcf1';
-            ctx.lineWidth = 2;
-            ctx.globalAlpha = 0.5;
-
-            ctx.beginPath();
-            for (let x = 0; x < canvas.width; x += 5) {
-                // Simulate an AM wave
-                let carrier = Math.cos(x * 0.1 + time * 5);
-                let envelope = Math.sin(x * 0.01 + time);
-                let y = 30 + (envelope * carrier) * 20;
-
-                if (x === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
-            ctx.globalAlpha = 1.0;
-        }
-
-        function draw(ctx) {
-            if (gameState === 'TUNING') {
-                drawTuningStatic();
-                return; // HTML UI handles the rest
-            }
-            if (gameState === 'PUZZLE') {
-                drawPuzzleWaveform();
-                return;
-            }
-            if (gameState === 'WIN' || gameState === 'EPILOGUE') {
-                return; // Overlays handle drawing for these states
-            }
-
-            // Clear screen (only needed if bg takes time to load, or to clear edges)
-            ctx.fillStyle = GAME_BG;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Draw Mountain Background Image
-            drawMountains(ctx);
-
-            // Lightning Flash (Draw behind foreground, over background)
-            if (isLightningStriking) {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }
-
-            // Draw Weather Particles (Background)
-            if (weatherType === 'snow') {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-            } else if (weatherType === 'rain') {
-                ctx.strokeStyle = 'rgba(150, 200, 255, 0.6)';
-                ctx.lineWidth = 1;
-            }
-
-            for (let p of weatherParticles) {
-                if (weatherType === 'snow') {
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (weatherType === 'rain') {
-                    ctx.beginPath();
-                    ctx.moveTo(p.x, p.y);
-                    ctx.lineTo(p.x + p.drift * 2, p.y + p.length);
-                    ctx.stroke();
-                }
-
-                // Update positions
-                if (gameState === 'PLAYING') {
-                    p.y += p.speed;
-                    p.x += p.drift;
-                    if (p.y > canvas.height) p.y = -5;
-                    if (p.x > canvas.width) p.x = 0;
-                    if (p.x < 0) p.x = canvas.width;
-                }
-            }
-
-            if (gameState === 'PLAYING') {
-                ctx.save();
-                ctx.translate(-camera.x, -camera.y);
-
-                // Draw Platforms
-                ctx.fillStyle = PLATFORM_COLOR;
-                for (let plat of platforms) {
-                    // Skip drawing if outside camera view
-                    if (plat.x + plat.width < camera.x || plat.x > camera.x + camera.width ||
-                        plat.y + plat.height < camera.y || plat.y > camera.y + camera.height) continue;
-
-                    // Draw icy looking platforms
-                    ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
-                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                    ctx.fillRect(plat.x, plat.y, plat.width, 5); // Snow on top
-                    ctx.fillStyle = PLATFORM_COLOR;
-                }
-
-                // Draw Strawberries
-                let time = performance.now() / 1000;
-                for (let berry of strawberries) {
-                    if (berry.collected) continue;
-                    if (berry.x + berry.width < camera.x || berry.x > camera.x + camera.width ||
-                        berry.y + berry.height < camera.y || berry.y > camera.y + camera.height) continue;
-
-                    // Floating animation
-                    berry.y = berry.originY + Math.sin(time * 3 + berry.floatOffset) * 5;
-
-                    // Draw pixel strawberry
-                    ctx.fillStyle = '#ff1744'; // Red body
-                    ctx.fillRect(berry.x, berry.y + 4, 16, 12);
-                    ctx.fillRect(berry.x + 2, berry.y + 2, 12, 14);
-
-                    ctx.fillStyle = '#69f0ae'; // Green top
-                    ctx.fillRect(berry.x + 4, berry.y, 8, 4);
-                    ctx.fillRect(berry.x + 2, berry.y + 2, 4, 2);
-                    ctx.fillRect(berry.x + 10, berry.y + 2, 4, 2);
-
-                    ctx.fillStyle = 'white'; // Seeds
-                    ctx.fillRect(berry.x + 4, berry.y + 6, 2, 2);
-                    ctx.fillRect(berry.x + 10, berry.y + 8, 2, 2);
-                    ctx.fillRect(berry.x + 6, berry.y + 12, 2, 2);
-                }
-
-                // Draw Lore Collectibles
-                for (let lore of loreCollectibles) {
-                    if (lore.collected) continue;
-                    if (lore.x + lore.width < camera.x || lore.x > camera.x + camera.width ||
-                        lore.y + lore.height < camera.y || lore.y > camera.y + camera.height) continue;
-
-                    // Floating animation
-                    lore.y = lore.originY + Math.sin(time * 3 + lore.floatOffset) * 5;
-
-                    ctx.fillStyle = lore.color;
-                    ctx.fillRect(lore.x, lore.y, lore.width, lore.height);
-
-                    // Text label
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = '10px Courier New';
-                    ctx.fillText(lore.name, lore.x - 10, lore.y - 5);
-                }
-
-                // Draw Power-ups
-                for (let pup of powerups) {
-                    if (pup.collected) continue;
-                    if (pup.x + pup.width < camera.x || pup.x > camera.x + camera.width ||
-                        pup.y + pup.height < camera.y || pup.y > camera.y + camera.height) continue;
-
-                    pup.y = pup.originY + Math.sin(time * 4 + pup.floatOffset) * 6;
-
-                    // Glowing effect
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = pup.color;
-                    ctx.fillStyle = pup.color;
-                    ctx.fillRect(pup.x, pup.y, pup.width, pup.height);
-                    ctx.shadowBlur = 0; // reset
-
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = '10px Courier New';
-                    ctx.fillText("Low Pass Filter", pup.x - 20, pup.y - 5);
-                }
-
-                // Draw Doors
-                for (let door of doors) {
-                    if (door.x + door.width < camera.x || door.x > camera.x + camera.width ||
-                        door.y + door.height < camera.y || door.y > camera.y + camera.height) continue;
-
-                    ctx.fillStyle = '#4e342e'; // Dark wood color
-                    ctx.fillRect(door.x, door.y, door.width, door.height);
-
-                    // Door knob
-                    ctx.fillStyle = '#ffeb3b';
-                    ctx.beginPath();
-                    ctx.arc(door.x + door.width - 10, door.y + door.height / 2, 4, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Prompt
-                    if (rectIntersect(player, door)) {
-                        ctx.fillStyle = '#fff';
-                        ctx.font = '14px Courier New';
-                        ctx.fillText("Press UP to enter", door.x - 20, door.y - 10);
-                    }
-                }
-
-                // Draw Hazards (Spikes)
-                ctx.fillStyle = '#ff1744'; // Red spikes
-                for (let haz of hazards) {
-                    if (haz.x + haz.width < camera.x || haz.x > camera.x + camera.width ||
-                        haz.y + haz.height < camera.y || haz.y > camera.y + camera.height) continue;
-
-                    // Draw zigzag spikes
-                    ctx.beginPath();
-                    ctx.moveTo(haz.x, haz.y + haz.height);
-                    for (let i = 0; i < haz.width; i += 10) {
-                        ctx.lineTo(haz.x + i + 5, haz.y);
-                        ctx.lineTo(haz.x + i + 10, haz.y + haz.height);
-                    }
-                    ctx.fill();
-                }
-
-                // Draw Interactables (Tesca 40501)
-                for (let item of interactables) {
-                    if (item.active) {
-                        if (item.x + item.width < camera.x || item.x > camera.x + camera.width ||
-                            item.y + item.height < camera.y || item.y > camera.y + camera.height) continue;
-
-                        // Pixel art style Tesca Machine
-                        ctx.fillStyle = '#2c3e50'; // Machine base
-                        ctx.fillRect(item.x, item.y, item.width, item.height);
-
-                        // Screen
-                        ctx.fillStyle = '#81c784'; // Green oscilloscope screen
-                        ctx.fillRect(item.x + 5, item.y + 5, item.width - 10, item.height / 2 - 5);
-
-                        // Wave on screen
-                        ctx.strokeStyle = '#fff';
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(item.x + 5, item.y + item.height/4);
-                        for(let i=0; i < item.width-10; i++) {
-                            ctx.lineTo(item.x + 5 + i, item.y + item.height/4 + Math.sin(i*0.5)*5);
-                        }
-                        ctx.stroke();
-
-                        // Knobs
-                        ctx.fillStyle = '#cfd8dc';
-                        ctx.beginPath(); ctx.arc(item.x + 15, item.y + item.height - 15, 8, 0, Math.PI*2); ctx.fill();
-                        ctx.beginPath(); ctx.arc(item.x + 45, item.y + item.height - 15, 8, 0, Math.PI*2); ctx.fill();
-
-                        // Draw interaction prompt if player is near
-                        if (rectIntersect(player, item)) {
-                            ctx.fillStyle = '#fff';
-                            ctx.font = '16px Courier New';
-                            ctx.fillText("Press 'E' to interact", item.x - 40, item.y - 10);
-                        }
-                    }
-                }
-
-                // If dashing, maybe draw a simple trail or tint
-                if (player.isDashing) {
-                    ctx.fillStyle = 'rgba(102, 252, 241, 0.5)';
-                    ctx.fillRect(player.x - player.dashDirX*20, player.y - player.dashDirY*20, player.width, player.height);
-                    ctx.fillRect(player.x - player.dashDirX*40, player.y - player.dashDirY*40, player.width, player.height);
-                }
-
-                // Draw player
-                ctx.save();
-
-                // Move origin to the bottom center of the player for scaling
-                ctx.translate(player.x + player.width / 2, player.y + player.height);
-                ctx.scale(player.scaleX, player.scaleY);
-
-                let drawX = -player.width / 2;
-                let drawY = -player.height;
-
-                if (charLoaded) {
-                    // Frisk Sprite coordinates. The image is 840x859, 4 columns by 4 rows.
-                    // 840 / 4 = 210 wide, 859 / 4 = 214 high per frame.
-                    // We'll use row 0, col 0 for idle.
-                    let srcX = 0;
-                    let srcY = 0;
-                    let srcWidth = 210;
-                    let srcHeight = 214;
-
-                    // Flip the character if facing left
-                    if (player.facingDirection === -1) {
-                        ctx.scale(-1, 1);
-                    }
-
-                    // Frisk image needs to map to player dimensions
-                    let imgDrawWidth = player.width * 1.5;
-                    let imgDrawHeight = player.height * 1.5;
-                    ctx.drawImage(charImage, srcX, srcY, srcWidth, srcHeight, -imgDrawWidth/2, -imgDrawHeight, imgDrawWidth, imgDrawHeight);
-                } else {
-                    ctx.fillStyle = player.color;
-                    ctx.fillRect(drawX, drawY, player.width, player.height);
-
-                    // Draw eyes (looking in direction of movement)
-                    ctx.fillStyle = 'white';
-                    let eyeOffsetX = player.vx > 0.5 ? 6 : (player.vx < -0.5 ? -6 : 0);
-
-                    // Left eye
-                    ctx.fillRect(drawX + 6 + eyeOffsetX, drawY + 8, 6, 6);
-                    // Right eye
-                    ctx.fillRect(drawX + player.width - 12 + eyeOffsetX, drawY + 8, 6, 6);
-
-                    // Pupils
-                    ctx.fillStyle = 'black';
-                    ctx.fillRect(drawX + 8 + eyeOffsetX, drawY + 10, 2, 2);
-                    ctx.fillRect(drawX + player.width - 10 + eyeOffsetX, drawY + 10, 2, 2);
-
-                    // Scarf simple trail
-                    if (Math.abs(player.vx) > 1) {
-                        ctx.fillStyle = player.color;
-                        let trailDir = player.vx > 0 ? -1 : 1;
-                        ctx.fillRect(drawX + (trailDir > 0 ? player.width : 0) + trailDir * 10, drawY + 15, 10, 8);
-                    }
-                }
-
-                ctx.restore(); // Restore from player scaling
-
-                ctx.restore(); // Restore to screen coordinates (from camera translation)
-
-                // Top Audio Wave Visualizer
-                drawTopAudioVisualizer(ctx);
-
-                // Draw stage info (HUD)
-                ctx.fillStyle = '#66fcf1';
-                ctx.font = '20px Courier New';
-                ctx.fillText(`Stage ${currentStage}`, 20, 30);
-                if (currentStage === 1) ctx.fillText("Learn: Amplitude Modulation (AM)", 20, 55);
-                if (currentStage === 2) ctx.fillText("Learn: Frequency Modulation (FM)", 20, 55);
-                if (currentStage === 3) ctx.fillText("Final Test: Combined Modulation", 20, 55);
-
-                // Draw Strawberry count HUD
-                ctx.fillStyle = '#ff1744';
-                ctx.fillRect(canvas.width - 100, 20, 16, 16);
-                ctx.fillStyle = 'white';
-                ctx.font = '20px Courier New';
-                ctx.fillText(`x ${totalStrawberriesCollected}`, canvas.width - 70, 35);
-
-                // Draw Filter Timer HUD
-                if (filterActive) {
-                    ctx.fillStyle = '#29b6f6';
-                    ctx.font = '20px Courier New';
-                    ctx.fillText(`Filter Active: ${filterTimer.toFixed(1)}s`, canvas.width / 2 - 100, 30);
-                }
-
-                // Draw Lore Count HUD
-                let loreCount = Object.values(collectedLore).filter(v => v).length;
-                ctx.fillStyle = '#ffeb3b';
-                ctx.font = '16px Courier New';
-                ctx.fillText(`Parts: ${loreCount}/4`, canvas.width - 100, 60);
-            }
-        }
 
     </script>
 </body>
