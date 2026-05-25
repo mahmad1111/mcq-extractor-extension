@@ -89,6 +89,17 @@
         const audioManager = {
             ctx: null,
             started: false,
+            nextNoteTime: 0,
+            currentNote: 0,
+
+            // Celeste-like melodic progression (C Minor scale arpeggios)
+            // Frequencies for C4, Eb4, G4, Bb4, C5, etc.
+            notes: [
+                261.63, 311.13, 392.00, 466.16, 523.25, 466.16, 392.00, 311.13, // Up and down
+                261.63, 311.13, 392.00, 523.25, 622.25, 523.25, 392.00, 311.13, // Higher reach
+                196.00, 261.63, 311.13, 392.00, 311.13, 261.63, 196.00, 155.56  // Lower dip (G3, C4...)
+            ],
+            tempo: 120, // BPM
 
             init() {
                 if (this.started) return;
@@ -97,56 +108,56 @@
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 this.ctx = new AudioContext();
 
-                this.playMeditationDrone();
+                this.nextNoteTime = this.ctx.currentTime + 0.1;
+                this.scheduleMusic();
             },
 
-            playMeditationDrone() {
-                if (!this.ctx) return;
+            playPluck(freq, time) {
+                // Pluck/Piano-like envelope
+                const osc = this.ctx.createOscillator();
+                osc.type = 'triangle'; // gentle tone
+                osc.frequency.value = freq;
 
-                // Base drone (low frequency)
-                const osc1 = this.ctx.createOscillator();
-                osc1.type = 'sine';
-                osc1.frequency.value = 65.41; // C2
+                const gain = this.ctx.createGain();
+                // Fast attack, exponential decay
+                gain.gain.setValueAtTime(0, time);
+                gain.gain.linearRampToValueAtTime(0.2, time + 0.05); // attack
+                gain.gain.exponentialRampToValueAtTime(0.001, time + 1.0); // decay/release
 
-                const gain1 = this.ctx.createGain();
-                gain1.gain.value = 0.15;
+                // Add a bit of simple filter/echo effect by layering
+                const echoDelay = this.ctx.createDelay();
+                echoDelay.delayTime.value = 0.3;
+                const echoGain = this.ctx.createGain();
+                echoGain.gain.value = 0.3;
 
-                // Higher harmonic
-                const osc2 = this.ctx.createOscillator();
-                osc2.type = 'sine';
-                osc2.frequency.value = 130.81; // C3
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
 
-                const gain2 = this.ctx.createGain();
-                gain2.gain.value = 0.08;
+                gain.connect(echoDelay);
+                echoDelay.connect(echoGain);
+                echoGain.connect(this.ctx.destination);
 
-                // Very slow LFO to create "breathing" effect on volume
-                const lfo = this.ctx.createOscillator();
-                lfo.type = 'sine';
-                lfo.frequency.value = 0.05; // 20 second cycle
+                osc.start(time);
+                osc.stop(time + 1.5);
+            },
 
-                const lfoGain = this.ctx.createGain();
-                lfoGain.gain.value = 0.05;
+            scheduleMusic() {
+                if (!this.started || !this.ctx) return;
 
-                // Master gain for drone
-                const masterGain = this.ctx.createGain();
-                masterGain.gain.value = 0.5;
+                // Schedule ahead to ensure smooth playback
+                while (this.nextNoteTime < this.ctx.currentTime + 0.1) {
+                    const freq = this.notes[this.currentNote % this.notes.length];
+                    this.playPluck(freq, this.nextNoteTime);
 
-                // Connections
-                lfo.connect(lfoGain);
-                lfoGain.connect(masterGain.gain);
+                    // Advance note and time
+                    this.currentNote++;
+                    const secondsPerBeat = 60.0 / this.tempo;
+                    this.nextNoteTime += secondsPerBeat * 0.5; // 8th notes
+                }
 
-                osc1.connect(gain1);
-                gain1.connect(masterGain);
-
-                osc2.connect(gain2);
-                gain2.connect(masterGain);
-
-                masterGain.connect(this.ctx.destination);
-
-                // Start
-                osc1.start();
-                osc2.start();
-                lfo.start();
+                // Request next frame to keep scheduler running
+                // Use setTimeout to avoid coupling directly to rendering framerate
+                setTimeout(() => this.scheduleMusic(), 25);
             },
 
             playJumpSound() {
@@ -259,6 +270,18 @@
             }
         };
 
+        // --- Images ---
+        const images = {
+            owl: new Image(),
+            armstrong: new Image(),
+            loaded: 0,
+            init() {
+                this.owl.src = 'owl.jpg';
+                this.armstrong.src = 'armstrong.jpg';
+            }
+        };
+        images.init();
+
         // --- Dialogue & Wise Owl ---
         const dialogueManager = {
             element: document.getElementById('owl-text'),
@@ -308,56 +331,19 @@
             },
 
             drawOwl(ctx) {
+                if (!images.owl.complete) return;
+
                 // Fixed position owl at the top of the screen (camera independent)
-                const ox = window.innerWidth / 2;
-                const oy = 80;
+                const imgWidth = 100;
+                const imgHeight = 100 * (images.owl.height / images.owl.width);
+                const ox = window.innerWidth / 2 - imgWidth / 2;
+                const oy = 20;
 
                 ctx.save();
-
-                // Body
-                ctx.fillStyle = '#8B4513';
-                ctx.beginPath();
-                ctx.ellipse(ox, oy, 30, 40, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Belly
-                ctx.fillStyle = '#D2B48C';
-                ctx.beginPath();
-                ctx.ellipse(ox, oy + 10, 20, 25, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Eyes
-                ctx.fillStyle = '#FFF';
-                ctx.beginPath();
-                ctx.arc(ox - 12, oy - 15, 10, 0, Math.PI * 2);
-                ctx.arc(ox + 12, oy - 15, 10, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Pupils
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(ox - 12, oy - 15, 4, 0, Math.PI * 2);
-                ctx.arc(ox + 12, oy - 15, 4, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Beak
-                ctx.fillStyle = '#FFA500';
-                ctx.beginPath();
-                ctx.moveTo(ox - 5, oy - 5);
-                ctx.lineTo(ox + 5, oy - 5);
-                ctx.lineTo(ox, oy + 5);
-                ctx.fill();
-
-                // Brows
-                ctx.strokeStyle = '#5C3A21';
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-                ctx.moveTo(ox - 25, oy - 25);
-                ctx.lineTo(ox - 5, oy - 20);
-                ctx.moveTo(ox + 25, oy - 25);
-                ctx.lineTo(ox + 5, oy - 20);
-                ctx.stroke();
-
+                // Add a subtle glow behind the image
+                ctx.shadowColor = '#fff';
+                ctx.shadowBlur = 20;
+                ctx.drawImage(images.owl, ox, oy, imgWidth, imgHeight);
                 ctx.restore();
             }
         };
@@ -423,13 +409,21 @@
                 this.doors.push({ x: currentX + 300, y: 400, w: 60, h: 100, target: 'secret_fm' });
 
                 // Secret Rooms
-                // Room AM
-                this.platforms.push({ x: 0, y: 2000, w: 1000, h: 100, type: 'secret' });
-                this.doors.push({ x: 100, y: 1900, w: 60, h: 100, target: 'main_am' }); // Exit door
+                // Room AM - Enclosed
+                this.platforms.push({ x: 0, y: 2000, w: 800, h: 50, type: 'secret' }); // Floor
+                this.platforms.push({ x: -50, y: 1500, w: 50, h: 550, type: 'secret' }); // Left Wall
+                this.platforms.push({ x: 800, y: 1500, w: 50, h: 550, type: 'secret' }); // Right Wall
 
-                // Room FM
-                this.platforms.push({ x: 2000, y: 2000, w: 1000, h: 100, type: 'secret' });
-                this.doors.push({ x: 2100, y: 1900, w: 60, h: 100, target: 'main_fm' }); // Exit door
+                // Entry/Exit door is on the far right
+                this.doors.push({ x: 700, y: 1900, w: 60, h: 100, target: 'main_am' });
+
+                // Room FM - Enclosed
+                this.platforms.push({ x: 2000, y: 2000, w: 800, h: 50, type: 'secret' }); // Floor
+                this.platforms.push({ x: 1950, y: 1500, w: 50, h: 550, type: 'secret' }); // Left Wall
+                this.platforms.push({ x: 2800, y: 1500, w: 50, h: 550, type: 'secret' }); // Right Wall
+
+                // Entry/Exit door is on the far right
+                this.doors.push({ x: 2700, y: 1900, w: 60, h: 100, target: 'main_fm' });
             },
 
             checkCollision(player, deltaTime) {
@@ -460,13 +454,13 @@
 
                             // Teleport based on door target
                             if (d.target === 'secret_am') {
-                                player.x = 200; player.y = 1800;
+                                player.x = 50; player.y = 1800;
                             } else if (d.target === 'main_am') {
-                                player.x = 5500; player.y = 300;
+                                player.x = 4850; player.y = 300; // Back to end of AM stage
                             } else if (d.target === 'secret_fm') {
-                                player.x = 2200; player.y = 1800;
+                                player.x = 2050; player.y = 1800;
                             } else if (d.target === 'main_fm') {
-                                player.x = 11000; player.y = 300;
+                                player.x = 10000; player.y = 300; // Back to end of FM stage
                             }
                             // Small cooldown/reset so we don't double trigger
                             keys.jump = false;
@@ -475,11 +469,35 @@
                     }
                 }
 
-                // Death plane
-                if (player.y > 3000) {
-                    player.x = 100;
-                    player.y = 100;
+                // Death plane / Void check
+                if (player.y > 1000 && player.y < 1500) {
+                    // Respawn logic based on stage
+                    if (player.x < 5300) {
+                        // AM Stage Start
+                        player.x = 100;
+                        player.y = 100;
+                    } else {
+                        // FM Stage Start
+                        player.x = 5500;
+                        player.y = 300;
+                    }
                     player.vy = 0;
+                    player.vx = 0;
+                }
+
+                // Fall off secret rooms
+                if (player.y > 2500) {
+                     if (player.x < 1500) {
+                        // Back to AM Secret Start
+                        player.x = 200;
+                        player.y = 1800;
+                    } else {
+                        // Back to FM Secret Start
+                        player.x = 2200;
+                        player.y = 1800;
+                    }
+                    player.vy = 0;
+                    player.vx = 0;
                 }
             },
 
@@ -515,6 +533,21 @@
                     // Door glow/particles
                     ctx.fillStyle = 'rgba(255, 170, 0, 0.3)';
                     ctx.fillRect(d.x - 10, d.y - 10, d.w + 20, d.h + 20);
+                }
+
+                // Draw Armstrong Portrait in FM Secret Room
+                if (images.armstrong.complete) {
+                    const ax = 2300;
+                    const ay = 1600;
+                    const aw = 200;
+                    const ah = 200 * (images.armstrong.height / images.armstrong.width);
+                    ctx.drawImage(images.armstrong, ax, ay, aw, ah);
+
+                    // Sign under portrait
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '20px "Segoe UI"';
+                    ctx.fillText("Thank you for saving my project", ax - 40, ay + ah + 30);
+                    ctx.fillText("from being forgotten. - Edwin Armstrong", ax - 60, ay + ah + 60);
                 }
             }
         };
@@ -730,9 +763,48 @@
             ctx.fillStyle = '#0d1117'; // Night sky
             ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
-            // Background grid pattern to help with sense of movement
+            // Dynamic Wave Background based on player location
             ctx.save();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            const time = performance.now() / 1000;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 3;
+
+            // Determine wave type based on player X
+            let isAM = player.x < 5300;
+
+            ctx.beginPath();
+            for (let x = 0; x < window.innerWidth; x += 5) {
+                // Moving the wave relative to the camera creates a parallax effect
+                const worldX = x + camera.x * 0.2;
+
+                let yOffset = 0;
+                if (isAM) {
+                    // AM: Constant frequency, modulating amplitude
+                    const carrierFreq = 0.05;
+                    const modFreq = 0.005;
+                    // Amplitude changes slowly over space and time
+                    const amplitude = 50 + 40 * Math.sin(worldX * modFreq - time);
+                    yOffset = Math.sin(worldX * carrierFreq - time * 5) * amplitude;
+                } else {
+                    // FM: Constant amplitude, modulating frequency
+                    const carrierFreq = 0.03;
+                    const modFreq = 0.005;
+                    const amplitude = 60;
+                    // Frequency changes based on modulation wave
+                    const freqOffset = 20 * Math.sin(worldX * modFreq - time);
+                    // Integrate frequency over distance (simplified for visual effect)
+                    yOffset = Math.sin((worldX * carrierFreq) + freqOffset - time * 5) * amplitude;
+                }
+
+                const y = window.innerHeight / 2 + yOffset;
+
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Background grid pattern to help with sense of movement
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
             ctx.lineWidth = 1;
             const gridOffsetX = -(camera.x % 100);
             const gridOffsetY = -(camera.y % 100);
